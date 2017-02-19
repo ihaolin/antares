@@ -1,0 +1,36 @@
+########### Spring Boot Configuration Start ###########
+
+server:
+  # the server port
+  address: 127.0.0.1
+  port: 22122
+
+spring:
+  # redis datasource
+  redis:
+    host: localhost
+    port: 6379
+
+logging:
+  # logback file location
+  config: @log.file@
+
+########### Spring Boot Configuration End ###########
+
+
+########### Antares Configuration Start ###########
+antares:
+
+  # zk hosts
+  zkServers: localhost:2181
+
+  # zk namespace
+  zkNamespace: ats
+
+  # server failover wait time(secs)
+  serverFailoverWaitTime: 30
+
+  # schedule thread count
+  scheduleThreadCount: 32
+
+########### Antares Configuration End ###########

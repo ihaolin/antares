@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOG_HOME" value="${antares.logPath}" />
+
+    <!-- default -->
+    <appender name="default" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/default.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/default-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </layout>
+    </appender>
+
+    <!-- info logs -->
+    <appender name="info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/info-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </layout>
+    </appender>
+    <logger level="INFO" name="info" additivity="false">
+        <appender-ref ref="info" />
+    </logger>
+
+    <!-- warn logs -->
+    <appender name="warn" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/warn.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/warn-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </layout>
+    </appender>
+    <logger level="WARN" name="warn" additivity="false">
+        <appender-ref ref="warn" />
+    </logger>
+
+    <!-- notify logs -->
+    <appender name="notify" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/notify.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/notify-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </layout>
+    </appender>
+    <logger level="INFO" name="info" additivity="false">
+        <appender-ref ref="info" />
+    </logger>
+
+    <!-- error -->
+    <appender name="error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_HOME}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${LOG_HOME}/error-%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{80} - %msg%n</pattern>
+        </layout>
+    </appender>
+    <logger level="ERROR" name="error" additivity="false">
+        <appender-ref ref="error" />
+    </logger>
+
+    <root level="WARN">
+        <appender-ref ref="default" />
+    </root>
+
+</configuration>

@@ -1,0 +1,39 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/2.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/2.6 http://maven.apache.org/xsd/assembly-2.6.xsd">
+
+    <id>${project.artifactId}-assembly-${project.version}</id>
+
+    <!-- basedir -->
+    <baseDirectory>${project.artifactId}-${project.version}</baseDirectory>
+
+    <!-- don't need the file's base dirs -->
+    <!--<includeBaseDirectory>false</includeBaseDirectory>-->
+
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+
+    <files>
+
+        <!-- conf files -->
+        <file>
+            <source>src/main/scripts/antares.conf</source>
+            <outputDirectory>conf</outputDirectory>
+        </file>
+
+        <!-- bin files -->
+        <file>
+            <source>src/main/scripts/antares.sh</source>
+            <outputDirectory>bin</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
+        </file>
+
+        <!-- lib file -->
+        <file>
+            <source>target/${project.artifactId}.jar</source>
+            <outputDirectory>lib</outputDirectory>
+        </file>
+
+    </files>
+</assembly>
