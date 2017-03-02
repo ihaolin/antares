@@ -25,6 +25,13 @@ public interface AppService {
     Response<App> findByName(String name);
 
     /**
+     * Find an application by id
+     * @param id the app id
+     * @return the app
+     */
+    Response<App> findById(Long id);
+
+    /**
      * List all applications
      * @param appName the app name(full match)
      * @param pageNo page no

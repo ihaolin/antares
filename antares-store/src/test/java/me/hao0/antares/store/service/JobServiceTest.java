@@ -1,8 +1,10 @@
 package me.hao0.antares.store.service;
 
+import me.hao0.antares.common.dto.DependenceJob;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobInstanceDto;
 import me.hao0.antares.common.model.Job;
+import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.enums.JobStatus;
 import me.hao0.antares.store.BaseTest;
@@ -115,6 +117,50 @@ public class JobServiceTest extends BaseTest {
     @Test
     public void testDeleteJob(){
         Response<Boolean> deleteResp = jobService.deleteJob(1L);
+        assertTrue(deleteResp.isSuccess());
+        assertTrue(deleteResp.getData());
+    }
+
+    @Test
+    public void testAddJobDependence(){
+        JobDependence jd = new JobDependence();
+        jd.setJobId(1L);
+        jd.setNextJobId(3L);
+        Response<Boolean> addResp = jobService.addJobDependence(jd);
+        assertTrue(addResp.isSuccess());
+        assertTrue(addResp.getData());
+    }
+
+    @Test
+    public void testPagingJobDependence(){
+        Response<Page<DependenceJob>> pagingResp = jobService.pagingNextJobs(1L, 1, 10);
+        assertTrue(pagingResp.isSuccess());
+        assertEquals(1, pagingResp.getData().getData().size());
+
+        pagingResp = jobService.pagingNextJobs(2L, 1, 10);
+        assertTrue(pagingResp.isSuccess());
+        assertEquals(0, pagingResp.getData().getData().size());
+    }
+
+    @Test
+    public void testDeleteNextJob(){
+
+        Response<Boolean> deleteResp = jobService.deleteNextJob(1L, 404L);
+        assertTrue(deleteResp.isSuccess());
+        assertFalse(deleteResp.getData());
+
+        deleteResp = jobService.deleteNextJob(1L, 2L);
+        assertTrue(deleteResp.isSuccess());
+        assertTrue(deleteResp.getData());
+
+        deleteResp = jobService.deleteNextJob(2L, 1L);
+        assertTrue(deleteResp.isSuccess());
+        assertFalse(deleteResp.getData());
+    }
+
+    @Test
+    public void testDeleteNextJobs(){
+        Response<Boolean> deleteResp = jobService.deleteNextJobs(1L);
         assertTrue(deleteResp.isSuccess());
         assertTrue(deleteResp.getData());
     }

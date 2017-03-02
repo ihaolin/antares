@@ -35,11 +35,19 @@ public class AppServiceImpl implements AppService {
     /**
      * App cache for 5 mins
      */
-    private final LoadingCache<String, App> APP_CACHE =
+    private final LoadingCache<String, App> APP_NAME_CACHE =
             CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<String, App>() {
                 @Override
                 public App load(String appName) throws Exception {
                     return appDao.findByName(appName);
+                }
+            });
+
+    private final LoadingCache<Long, App> APP_ID_CACHE =
+            CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.MINUTES).build(new CacheLoader<Long, App>() {
+                @Override
+                public App load(Long appId) throws Exception {
+                    return appDao.findById(appId);
                 }
             });
 
@@ -67,10 +75,20 @@ public class AppServiceImpl implements AppService {
     @Override
     public Response<App> findByName(String name) {
         try {
-            return Response.ok(APP_CACHE.get(name));
+            return Response.ok(APP_NAME_CACHE.get(name));
         } catch (Exception e){
             Logs.error("failed to find app(name={}), cause: {}", name, Throwables.getStackTraceAsString(e));
-            return Response.notOk("app.save.failed");
+            return Response.notOk("app.find.failed");
+        }
+    }
+
+    @Override
+    public Response<App> findById(Long id) {
+        try {
+            return Response.ok(APP_ID_CACHE.get(id));
+        } catch (Exception e){
+            Logs.error("failed to find app(id={}), cause: {}", id, Throwables.getStackTraceAsString(e));
+            return Response.notOk("app.find.failed");
         }
     }
 

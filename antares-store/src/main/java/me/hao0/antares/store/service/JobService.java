@@ -1,5 +1,6 @@
 package me.hao0.antares.store.service;
 
+import me.hao0.antares.common.dto.DependenceJob;
 import me.hao0.antares.common.dto.JobControl;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobEditDto;
@@ -10,6 +11,7 @@ import me.hao0.antares.common.dto.PullShard;
 import me.hao0.antares.common.dto.ShardFinishDto;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.model.JobConfig;
+import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.JobInstanceShard;
 import me.hao0.antares.store.util.Page;
@@ -257,4 +259,35 @@ public interface JobService {
      * @return return true if unbind successfully, or false
      */
     Response<Boolean> unbindJobServer(String server, Long jobId);
+
+    /**
+     * Add the job dependence
+     * @param dependence the job dependence
+     * @return return true if add successfully, or false
+     */
+    Response<Boolean> addJobDependence(JobDependence dependence);
+
+    /**
+     * Delete the job's next job
+     * @param jobId the job id
+     * @param nextJobId the next job id
+     * @return return true if delete successfully, or false
+     */
+    Response<Boolean> deleteNextJob(Long jobId, Long nextJobId);
+
+    /**
+     * Delete the job's next jobs
+     * @param jobId the job id
+     * @return return true if delete successfully, or false
+     */
+    Response<Boolean> deleteNextJobs(Long jobId);
+
+    /**
+     * Paging the job's next jobs
+     * @param jobId the job id
+     * @param pageNo the page number
+     * @param pageSize the page size
+     * @return the job's next page jobs
+     */
+    Response<Page<DependenceJob>> pagingNextJobs(Long jobId, Integer pageNo, Integer pageSize);
 }

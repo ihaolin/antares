@@ -1,5 +1,6 @@
 package me.hao0.antares.tower.api;
 
+import me.hao0.antares.common.dto.DependenceJob;
 import me.hao0.antares.common.dto.JobControl;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobEditDto;
@@ -9,6 +10,7 @@ import me.hao0.antares.common.dto.JobInstanceShardDto;
 import me.hao0.antares.common.dto.JsonResponse;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.model.JobConfig;
+import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.common.model.JobInstanceShard;
 import me.hao0.antares.common.model.enums.JobInstanceShardStatus;
 import me.hao0.antares.common.model.enums.JobInstanceStatus;
@@ -165,7 +167,6 @@ public class Jobs {
 
         return JsonResponse.ok(opResp.getData());
     }
-
 
     /**
      * Paging the job instances
@@ -462,5 +463,68 @@ public class Jobs {
             JobInstanceStatus status = JobInstanceStatus.from(detail.getStatus());
             detail.setStatusDesc(messages.get(status.code()));
         }
+    }
+
+    /**
+     * Add the job dependence
+     * @param jobId the job id
+     * @param nextJobId the next job id
+     * @return return true if add successfully, or false
+     */
+    @RequestMapping(value = "/{jobId}/{nextJobId}", method = RequestMethod.POST)
+    public JsonResponse addDependenceJob(
+                @PathVariable("jobId") Long jobId,
+                @PathVariable("nextJobId") Long nextJobId){
+
+        JobDependence dependence = new JobDependence();
+        dependence.setJobId(jobId);
+        dependence.setNextJobId(nextJobId);
+
+        Response<Boolean> addResp = jobService.addJobDependence(dependence);
+        if (!addResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(addResp.getErr()));
+        }
+
+        return JsonResponse.ok(addResp.getData());
+    }
+
+    /**
+     * Paging the job's next jobs
+     * @param jobId the job id
+     * @param pageNo the page number
+     * @param pageSize the page size
+     * @return the job's next jobs
+     */
+    @RequestMapping(value = "/{jobId}/next", method = RequestMethod.GET)
+    public JsonResponse pagingDependenceJobs(
+        @PathVariable("jobId") Long jobId,
+        @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+        @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
+
+        Response<Page<DependenceJob>> pagingResp = jobService.pagingNextJobs(jobId, pageNo, pageSize);
+        if (!pagingResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(pagingResp.getErr()));
+        }
+
+        return JsonResponse.ok(pagingResp.getData());
+    }
+
+    /**
+     * Delete the job dependence
+     * @param jobId the job id
+     * @param nextJobId the next job id
+     * @return return true if add successfully, or false
+     */
+    @RequestMapping(value = "/{jobId}/{nextJobId}/del", method = RequestMethod.POST)
+    public JsonResponse deleteDependenceJob(
+            @PathVariable("jobId") Long jobId,
+            @PathVariable("nextJobId") Long nextJobId){
+
+        Response<Boolean> deleteResp = jobService.deleteNextJob(jobId, nextJobId);
+        if (!deleteResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(deleteResp.getErr()));
+        }
+
+        return JsonResponse.ok(deleteResp.getData());
     }
 }

@@ -156,9 +156,18 @@ public final class RedisKeys {
     /**
      * The key of the client's running shard id list
      * @param client the client, host:pid
-     * @return /job_ins_sds/${client}
+     * @return job_ins_sds/${client}
      */
     public static String keyOfClientRunningShards(String client) {
         return format("clients", client, "sds");
+    }
+
+    /**
+     * The key of the job's next job id list key
+     * @param jobId the job id
+     * @return jobs:${jobId}:next
+     */
+    public static String keyOfJobNextJobs(Long jobId) {
+        return format("jobs", jobId, "next");
     }
 }

@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import me.hao0.antares.common.dto.DependenceJob;
 import me.hao0.antares.common.dto.JobControl;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobEditDto;
@@ -25,7 +26,12 @@ import me.hao0.antares.common.util.CollectionUtil;
 import me.hao0.antares.common.util.Constants;
 import me.hao0.antares.common.util.Executors;
 import me.hao0.antares.common.util.Systems;
-import me.hao0.antares.store.dao.*;
+import me.hao0.antares.store.dao.JobConfigDao;
+import me.hao0.antares.store.dao.JobDao;
+import me.hao0.antares.store.dao.JobDependenceDao;
+import me.hao0.antares.store.dao.JobInstanceDao;
+import me.hao0.antares.store.dao.JobInstanceShardDao;
+import me.hao0.antares.store.dao.JobServerDao;
 import me.hao0.antares.store.exception.JobInstanceNotExistException;
 import me.hao0.antares.store.exception.JobNotExistException;
 import me.hao0.antares.store.exception.ShardOperateException;
@@ -33,6 +39,7 @@ import me.hao0.antares.store.manager.JobConfigManager;
 import me.hao0.antares.store.manager.JobManager;
 import me.hao0.antares.store.manager.JobInstanceManager;
 import me.hao0.antares.store.manager.JobInstanceShardManager;
+import me.hao0.antares.store.service.AppService;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.support.JobSupport;
 import me.hao0.antares.store.util.Dates;
@@ -55,9 +62,6 @@ import java.util.concurrent.ExecutorService;
 public class JobServiceImpl implements JobService {
 
     @Autowired
-    private AppDao appDao;
-
-    @Autowired
     private JobDao jobDao;
 
     @Autowired
@@ -73,6 +77,9 @@ public class JobServiceImpl implements JobService {
     private JobInstanceShardDao jobInstanceShardDao;
 
     @Autowired
+    private JobDependenceDao jobDependenceDao;
+
+    @Autowired
     private JobManager jobManager;
 
     @Autowired
@@ -86,6 +93,9 @@ public class JobServiceImpl implements JobService {
 
     @Autowired
     private JobSupport jobSupport;
+
+    @Autowired
+    private AppService appService;
 
     private final ExecutorService executor = Executors.newExecutor(Systems.cpuNum(), 10000, "JOB-SERVER-WORKER-");
 
@@ -243,7 +253,7 @@ public class JobServiceImpl implements JobService {
             }
         }
 
-        App app = appDao.findById(job.getAppId());
+        App app = findAppById(job.getAppId());
 
         JobConfig config = jobConfigDao.findByJobId(jobId);
 
@@ -300,7 +310,7 @@ public class JobServiceImpl implements JobService {
                 return Response.ok(Page.<JobControl>empty());
             }
 
-            App app = appDao.findById(appId);
+            App app = findAppById(appId);
 
             Page<JobControl> pagingJobControl = renderJobControls(app.getAppName(), pagingJob);
 
@@ -716,6 +726,92 @@ public class JobServiceImpl implements JobService {
         }
     }
 
+    @Override
+    public Response<Boolean> addJobDependence(JobDependence dependence) {
+        try {
+            return Response.ok(jobDependenceDao.addDependence(dependence));
+        } catch (Exception e){
+            Logs.error("failed to add the job dependence({}), cause: {}",
+                    dependence, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.dependence.add.failed");
+        }
+    }
+
+    @Override
+    public Response<Boolean> deleteNextJob(Long jobId, Long nextJobId) {
+        try {
+            return Response.ok(jobDependenceDao.deleteNextJobId(jobId, nextJobId));
+        } catch (Exception e){
+            Logs.error("failed to delete the job dependence(jobId={}, nextJobId={}), cause: {}",
+                    jobId, nextJobId, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.dependence.delete.failed");
+        }
+    }
+
+    @Override
+    public Response<Boolean> deleteNextJobs(Long jobId) {
+        try {
+            return Response.ok(jobDependenceDao.deleteNextJobIds(jobId));
+        } catch (Exception e){
+            Logs.error("failed to delete the job dependences(jobId={}), cause: {}",
+                    jobId, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.dependence.delete.failed");
+        }
+    }
+
+    @Override
+    public Response<Page<DependenceJob>> pagingNextJobs(Long jobId, Integer pageNo, Integer pageSize) {
+        try {
+
+            Paging paging = new Paging(pageNo, pageSize);
+
+            Page<Long> pagingJobIds = jobDependenceDao.pagingNextJobIds(jobId, paging.getOffset(), paging.getLimit());
+            if (pagingJobIds.getTotal() <= 0L){
+                return Response.ok(Page.<DependenceJob>empty());
+            }
+
+            return Response.ok(renderDependenceJobs(pagingJobIds));
+
+        } catch (Exception e){
+            Logs.error("failed to paging the job dependence(jobId={}, pageNo={}, pageSize={}), cause: {}",
+                    jobId, pageNo, pageSize, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.dependence.find.failed");
+        }
+    }
+
+    private Page<DependenceJob> renderDependenceJobs(Page<Long> pagingJobIds) {
+
+        List<DependenceJob> dependenceJobs = Lists.newArrayListWithCapacity(pagingJobIds.getData().size());
+
+        DependenceJob dependenceJob;
+        for (Long jobId : pagingJobIds.getData()){
+            dependenceJob = renderDependenceJob(jobId);
+            if (dependenceJob != null) {
+                dependenceJobs.add(dependenceJob);
+            }
+        }
+
+        return new Page<>(pagingJobIds.getTotal(), dependenceJobs);
+    }
+
+    private DependenceJob renderDependenceJob(Long jobId) {
+
+        Job job = jobDao.findById(jobId);
+        if (job == null){
+            Logs.warn("The job(id={}) doesn't exist when render dependence job.", jobId);
+            return null;
+        }
+
+        App app = findAppById(job.getAppId());
+
+        DependenceJob dependenceJob = new DependenceJob();
+        dependenceJob.setId(jobId);
+        dependenceJob.setAppName(app.getAppName());
+        dependenceJob.setJobClass(job.getClazz());
+
+        return dependenceJob;
+    }
+
     private JobInstanceDetail renderJobRunningInstance(Long instanceId) {
 
         JobInstance instance = jobInstanceDao.findById(instanceId);
@@ -984,5 +1080,19 @@ public class JobServiceImpl implements JobService {
                     shardId, Throwables.getStackTraceAsString(e));
             return Response.notOk("job.instance.shard.find.failed");
         }
+    }
+
+    private App findAppById(Long appId) {
+        Response<App> findResp = appService.findById(appId);
+        if (!findResp.isSuccess()){
+            throw new RuntimeException("Failed to find app, id = " + appId);
+        }
+
+        App app = findResp.getData();
+        if (app == null){
+            throw new RuntimeException("The app isn't exist, id = " + appId);
+        }
+
+        return app;
     }
 }

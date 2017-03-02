@@ -16,3 +16,14 @@ logging:
   config: classpath:logback.xml
 
 ########### Spring Boot Configuration End ###########
+
+########### Antares Configuration Start ###########
+antares:
+
+  # zk hosts
+  zkServers: localhost:2181
+
+  # zk namespace
+  zkNamespace: ats
+
+########### Antares Configuration End ###########
