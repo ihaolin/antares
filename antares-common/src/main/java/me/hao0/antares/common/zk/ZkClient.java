@@ -513,7 +513,7 @@ public class ZkClient {
             return client.getData().forPath(path);
         } catch (Exception e){
             handleConnectionLoss(e);
-            throw new ZkException("failed to get path data");
+            throw new ZkException(e);
         }
     }
 
