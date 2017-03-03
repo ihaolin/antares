@@ -652,8 +652,13 @@ public class ZkClient {
 
     private void handleConnectionLoss(Exception e){
         if (e instanceof KeeperException.ConnectionLossException){
+
+            log.warn("zk client will restart...");
+
             // try to restart the zk connection
             restart();
+
+            log.warn("zk client do restart finished.");
         }
     }
 }
