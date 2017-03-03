@@ -2,15 +2,21 @@ package me.hao0.antares.common.zk;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import me.hao0.antares.common.exception.ZkException;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.utils.EnsurePath;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Author: haolin
@@ -18,11 +24,27 @@ import java.util.List;
  */
 public class ZkClient {
 
+    private static final Logger log = LoggerFactory.getLogger(ZkClient.class);
+
     private static final ExponentialBackoffRetry DEFAULT_RETRY_STRATEGY = new ExponentialBackoffRetry(1000, 3);
+
+    private final String hosts;
+
+    private final String namespace;
+
+    private final ExponentialBackoffRetry retryStrategy;
 
     private CuratorFramework client;
 
-    private ZkClient(){}
+    private volatile boolean started;
+
+    private final java.util.concurrent.locks.Lock RESTART_LOCK = new ReentrantLock();
+
+    private ZkClient(String hosts, String namespace, ExponentialBackoffRetry retryStrategy){
+        this.hosts = hosts;
+        this.namespace = namespace;
+        this.retryStrategy = retryStrategy;
+    }
 
     /**
      * Create a client instancclientAppPathExiste
@@ -30,7 +52,7 @@ public class ZkClient {
      * @param namespace path root, such as app name
      */
     public static ZkClient newClient(String hosts, String namespace){
-        return newClient(hosts, DEFAULT_RETRY_STRATEGY, namespace);
+        return newClient(hosts, namespace, DEFAULT_RETRY_STRATEGY);
     }
 
     /**
@@ -39,12 +61,67 @@ public class ZkClient {
      * @param namespace path root, such as app name
      * @param retryStrategy client retry strategy
      */
-    public static ZkClient newClient(String hosts, ExponentialBackoffRetry retryStrategy, String namespace){
-        ZkClient zc = new ZkClient();
-        zc.client = CuratorFrameworkFactory.builder()
-                        .connectString(hosts).retryPolicy(retryStrategy).namespace(namespace).build();
-        zc.client.start();
+    public static ZkClient newClient(String hosts, String namespace, ExponentialBackoffRetry retryStrategy){
+        ZkClient zc = new ZkClient(hosts, namespace, retryStrategy);
+        zc.start();
         return zc;
+    }
+
+    private void start() {
+
+        if (started){
+            return;
+        }
+
+        doStart();
+    }
+
+    private void doStart(){
+
+        client = CuratorFrameworkFactory.builder()
+                    .connectString(hosts)
+                    .namespace(namespace)
+                    .retryPolicy(retryStrategy)
+                    .build();
+
+        client.start();
+
+        try {
+            // connected until
+            client.blockUntilConnected(30, TimeUnit.SECONDS);
+            started = true;
+        } catch (InterruptedException e) {
+            throw new ZkException(e);
+        }
+    }
+
+    public void restart(){
+
+        try {
+
+            boolean locked = RESTART_LOCK.tryLock(30, TimeUnit.SECONDS);
+            if (!locked){
+                log.warn("timeout to get the restart lock, maybe it's locked by another.");
+                return;
+            }
+
+            if (client.getZookeeperClient().isConnected()){
+                return;
+            }
+
+            if (client != null){
+                // close old connection
+                client.close();
+            }
+
+            doStart();
+
+        } catch (InterruptedException e) {
+            log.error("failed to get the restart lock, cause: {}", Throwables.getStackTraceAsString(e));
+        } finally {
+            RESTART_LOCK.unlock();
+        }
+
     }
 
     /**
@@ -61,6 +138,7 @@ public class ZkClient {
     public void shutdown(){
         if (client != null){
             client.close();
+            started = false;
         }
     }
 
@@ -68,7 +146,6 @@ public class ZkClient {
      * Create an persistent path
      * @param path path
      * @return the path created
-     * @throws Exception
      */
     public String create(String path) {
         return create(path, (byte[])null);
@@ -79,12 +156,12 @@ public class ZkClient {
      * @param path path
      * @param data byte data
      * @return the path created
-     * @throws Exception
      */
     public String create(String path, byte[] data) {
         try {
             return client.create().withMode(CreateMode.PERSISTENT).forPath(path, data);
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -94,12 +171,12 @@ public class ZkClient {
      * @param path path
      * @param data string data
      * @return the path created
-     * @throws Exception
      */
     public String create(String path, String data){
         try {
             return create(path, data.getBytes("UTF-8"));
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -109,7 +186,6 @@ public class ZkClient {
      * @param path path
      * @param obj object
      * @return the path created
-     * @throws Exception
      */
     public String create(String path, Object obj){
         return create(path, JSON.toJSONString(obj));
@@ -120,12 +196,12 @@ public class ZkClient {
      * @param path path
      * @param data byte data
      * @return the path created
-     * @throws Exception
      */
     public String createSequential(String path, byte[] data) {
         try {
             return client.create().withMode(CreateMode.PERSISTENT_SEQUENTIAL).forPath(path, data);
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -135,12 +211,12 @@ public class ZkClient {
      * @param path path
      * @param data byte data
      * @return the path created
-     * @throws Exception
      */
     public String createSequential(String path, String data) {
         try {
             return createSequential(path, data.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -150,12 +226,12 @@ public class ZkClient {
      * @param path path
      * @param obj a object
      * @return the path created
-     * @throws Exception
      */
     public String createSequentialJson(String path, Object obj) {
         try {
             return createSequential(path, JSON.toJSONString(obj).getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -180,6 +256,7 @@ public class ZkClient {
         try {
             return client.create().withMode(CreateMode.EPHEMERAL).forPath(path, data);
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -194,6 +271,7 @@ public class ZkClient {
         try {
             return client.create().withMode(CreateMode.EPHEMERAL).forPath(path, data.getBytes("UTF-8"));
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -229,6 +307,7 @@ public class ZkClient {
         try {
             return client.create().withMode(CreateMode.EPHEMERAL_SEQUENTIAL).forPath(path, data);
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -244,6 +323,7 @@ public class ZkClient {
         try {
             return createEphemeralSequential(path, data.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -270,6 +350,7 @@ public class ZkClient {
         try {
             return createIfNotExists(path, data.getBytes("UTF-8"));
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -278,7 +359,6 @@ public class ZkClient {
      * Create a node if not exists
      * @param path path
      * @return return true if create
-     * @throws Exception
      */
     public Boolean createIfNotExists(String path) {
         return createIfNotExists(path, (byte[])null);
@@ -289,7 +369,6 @@ public class ZkClient {
      * @param path path
      * @param data path data
      * @return return true if create
-     * @throws Exception
      */
     public Boolean createIfNotExists(String path, byte[] data) {
         try {
@@ -299,6 +378,7 @@ public class ZkClient {
                 return Strings.isNullOrEmpty(nodePath) ? Boolean.FALSE : Boolean.TRUE;
             }
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
 
@@ -315,6 +395,7 @@ public class ZkClient {
             Stat pathStat = client.checkExists().forPath(path);
             return pathStat != null;
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -331,6 +412,7 @@ public class ZkClient {
             clientAppPathExist.ensure(client.getZookeeperClient());
             return Boolean.TRUE;
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -360,6 +442,7 @@ public class ZkClient {
             client.setData().forPath(path, data);
             return Boolean.TRUE;
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -372,7 +455,8 @@ public class ZkClient {
         try {
             client.delete().forPath(path);
         } catch (Exception e){
-            throw new RuntimeException(e);
+            handleConnectionLoss(e);
+            throw new ZkException(e);
         }
     }
 
@@ -386,7 +470,8 @@ public class ZkClient {
                 delete(path);
             }
         } catch (Exception e){
-            throw new RuntimeException(e);
+            handleConnectionLoss(e);
+            throw new ZkException(e);
         }
     }
 
@@ -398,7 +483,8 @@ public class ZkClient {
         try {
             client.delete().deletingChildrenIfNeeded().forPath(path);
         } catch (Exception e){
-            throw new RuntimeException(e);
+            handleConnectionLoss(e);
+            throw new ZkException(e);
         }
     }
 
@@ -412,7 +498,8 @@ public class ZkClient {
                 deleteRecursively(path);
             }
         } catch (Exception e){
-            throw new RuntimeException(e);
+            handleConnectionLoss(e);
+            throw new ZkException(e);
         }
     }
 
@@ -425,7 +512,8 @@ public class ZkClient {
         try {
             return client.getData().forPath(path);
         } catch (Exception e){
-            throw new RuntimeException("failed to get path data");
+            handleConnectionLoss(e);
+            throw new ZkException("failed to get path data");
         }
     }
 
@@ -479,6 +567,7 @@ public class ZkClient {
         try {
             return client.getChildren().forPath(path);
         } catch (Exception e) {
+            handleConnectionLoss(e);
             throw new ZkException(e);
         }
     }
@@ -559,5 +648,12 @@ public class ZkClient {
      */
     public Leader acquireLeader(String id, String leaderPath, LeaderListener listener){
         return new Leader(client, id, leaderPath, listener);
+    }
+
+    private void handleConnectionLoss(Exception e){
+        if (e instanceof KeeperException.ConnectionLossException){
+            // try to restart the zk connection
+            restart();
+        }
     }
 }
