@@ -112,6 +112,16 @@ public class ZkClientTest {
         }
     }
 
+    @Test
+    public void testZkClientRestart(){
+
+        zk.get("/jobs");
+
+        zk.restart();
+
+        zk.get("/jobs");
+    }
+
     @After
     public void destroy(){
         if (zk != null){

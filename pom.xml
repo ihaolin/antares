@@ -10,7 +10,7 @@
 
     <groupId>me.hao0</groupId>
     <artifactId>antares</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <modules>
         <module>antares-common</module>
         <module>antares-client</module>

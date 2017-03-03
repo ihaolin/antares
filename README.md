@@ -2,7 +2,7 @@
   <img src="./logo.png">
 </p>
 
-分布式任务调度平台(Distributed Job Schedule Platform)
+分布式任务调度平台(Distributed Job Schedule Platform)[![Build Status](https://travis-ci.org/ihaolin/antares.svg?branch=master)](https://travis-ci.org/ihaolin/antares)
 ---
 
 ## Antares特性
