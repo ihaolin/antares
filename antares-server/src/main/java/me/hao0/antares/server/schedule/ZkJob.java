@@ -68,6 +68,9 @@ public class ZkJob extends Component implements Lifecycle, ScheduleJob {
         String appName = app.getAppName();
         String jobClass = job.getClazz();
 
+        // clear the job data
+        // jobSupport.removeJob(jobDetail);
+
         // create the job instances dir
         jobSupport.mkJobInstances(appName, jobClass);
 

@@ -477,6 +477,7 @@ public class JobServiceImpl implements JobService {
         instanceDto.setId(instance.getId());
         instanceDto.setJobId(instance.getJobId());
         instanceDto.setStatus(instance.getStatus());
+        instanceDto.setTriggerType(instance.getTriggerType());
         instanceDto.setStartTime(Dates.format(instance.getStartTime()));
         if(instance.getEndTime() != null){
             instanceDto.setEndTime(Dates.format(instance.getEndTime()));
@@ -773,7 +774,24 @@ public class JobServiceImpl implements JobService {
             return Response.ok(renderDependenceJobs(pagingJobIds));
 
         } catch (Exception e){
-            Logs.error("failed to paging the job dependence(jobId={}, pageNo={}, pageSize={}), cause: {}",
+            Logs.error("failed to paging the next jobs(jobId={}, pageNo={}, pageSize={}), cause: {}",
+                    jobId, pageNo, pageSize, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.dependence.find.failed");
+        }
+    }
+
+    @Override
+    public Response<Page<Long>> pagingNextJobIds(Long jobId, Integer pageNo, Integer pageSize) {
+        try {
+
+            Paging paging = new Paging(pageNo, pageSize);
+
+            Page<Long> pagingJobIds = jobDependenceDao.pagingNextJobIds(jobId, paging.getOffset(), paging.getLimit());
+
+            return Response.ok(pagingJobIds);
+
+        } catch (Exception e){
+            Logs.error("failed to paging the next job ids(jobId={}, pageNo={}, pageSize={}), cause: {}",
                     jobId, pageNo, pageSize, Throwables.getStackTraceAsString(e));
             return Response.notOk("job.dependence.find.failed");
         }

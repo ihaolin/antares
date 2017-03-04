@@ -212,6 +212,25 @@ public class ServerServiceImpl implements ServerService {
     }
 
     @Override
+    public Response<Boolean> notifyJob(Long jobId) {
+        try {
+            checkJobState(jobId, JobState.WAITING, JobState.RUNNING);
+            return Response.ok(doOperateJob(jobId, JOB_NOTIFY + "/" + jobId));
+        } catch (JobFindException e){
+            return Response.notOk("job.find.failed");
+        } catch (JobStateTransferInvalidException e){
+            return Response.notOk("job.state.operate.invalid");
+        } catch (JobNotExistException e){
+            return Response.notOk("job.not.exist");
+        } catch (JobServerException e){
+            return Response.notOk(e.getMessage());
+        } catch (Exception e) {
+            Logs.info("failed to notify job(jobId={}), cause: {}", jobId, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.notify.failed");
+        }
+    }
+
+    @Override
     public Response<Boolean> pauseJob(Long jobId) {
         try {
             checkJobState(jobId, null, JobState.PAUSED);
@@ -333,19 +352,6 @@ public class ServerServiceImpl implements ServerService {
         public RetryableServerTask(String server, String uri) {
             this.server = server;
             this.uri = uri;
-        }
-
-        public RetryableServerTask(String server, String uri, Map<String, Object> params) {
-            this.server = server;
-            this.uri = uri;
-            this.params = params;
-        }
-
-        public RetryableServerTask(String server, String uri, Map<String, String> headers, Map<String, Object> params) {
-            this.server = server;
-            this.uri = uri;
-            this.headers = headers;
-            this.params = params;
         }
 
         @Override

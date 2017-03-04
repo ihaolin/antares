@@ -124,8 +124,8 @@ public class JobServiceTest extends BaseTest {
     @Test
     public void testAddJobDependence(){
         JobDependence jd = new JobDependence();
-        jd.setJobId(1L);
-        jd.setNextJobId(3L);
+        jd.setJobId(2L);
+        jd.setNextJobId(5L);
         Response<Boolean> addResp = jobService.addJobDependence(jd);
         assertTrue(addResp.isSuccess());
         assertTrue(addResp.getData());
@@ -135,11 +135,11 @@ public class JobServiceTest extends BaseTest {
     public void testPagingJobDependence(){
         Response<Page<DependenceJob>> pagingResp = jobService.pagingNextJobs(1L, 1, 10);
         assertTrue(pagingResp.isSuccess());
-        assertEquals(1, pagingResp.getData().getData().size());
+        assertEquals(0, pagingResp.getData().getData().size());
 
         pagingResp = jobService.pagingNextJobs(2L, 1, 10);
         assertTrue(pagingResp.isSuccess());
-        assertEquals(0, pagingResp.getData().getData().size());
+        assertEquals(1, pagingResp.getData().getData().size());
     }
 
     @Test
@@ -151,16 +151,16 @@ public class JobServiceTest extends BaseTest {
 
         deleteResp = jobService.deleteNextJob(1L, 2L);
         assertTrue(deleteResp.isSuccess());
-        assertTrue(deleteResp.getData());
-
-        deleteResp = jobService.deleteNextJob(2L, 1L);
-        assertTrue(deleteResp.isSuccess());
         assertFalse(deleteResp.getData());
+
+        deleteResp = jobService.deleteNextJob(2L, 5L);
+        assertTrue(deleteResp.isSuccess());
+        assertTrue(deleteResp.getData());
     }
 
     @Test
     public void testDeleteNextJobs(){
-        Response<Boolean> deleteResp = jobService.deleteNextJobs(1L);
+        Response<Boolean> deleteResp = jobService.deleteNextJobs(2L);
         assertTrue(deleteResp.isSuccess());
         assertTrue(deleteResp.getData());
     }

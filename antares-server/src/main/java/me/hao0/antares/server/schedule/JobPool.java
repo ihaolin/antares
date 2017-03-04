@@ -9,6 +9,7 @@ import me.hao0.antares.common.dto.JobFireTime;
 import me.hao0.antares.common.exception.JobStateTransferInvalidException;
 import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.enums.JobState;
+import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.common.support.Lifecycle;
 import me.hao0.antares.common.support.Component;
 import me.hao0.antares.common.util.CollectionUtil;
@@ -139,11 +140,11 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
 
         try {
 
-            // start the scheduler
-            schedulers.getScheduler().start();
-
             // initialize all zk jobs
             scheduleJobs(jobDetailsResp.getData());
+
+            // start the scheduler
+            schedulers.getScheduler().start();
 
         } catch (SchedulerException e) {
             throw new RuntimeException(e);
@@ -209,9 +210,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
         Scheduler scheduler = schedulers.getScheduler();
 
         // inject the executor
-        JobDataMap jobData = new JobDataMap();
-        jobData.put("executor", springs.getBean(JobExecutor.class));
-        jobData.put("jobDetail", jobDetail);
+        JobDataMap jobData = buildJobData(jobDetail, JobTriggerType.DEFAULT);
 
         org.quartz.JobDetail quartzJob = newJob(JobAgent.class)
                 .withIdentity(jobKey)
@@ -235,6 +234,14 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
         scheduler.scheduleJob(quartzJob, trigger);
 
         return Boolean.TRUE;
+    }
+
+    private JobDataMap buildJobData(JobDetail jobDetail, JobTriggerType triggerType) {
+        JobDataMap jobData = new JobDataMap();
+        jobData.put("executor", springs.getBean(JobExecutor.class));
+        jobData.put("jobDetail", jobDetail);
+        jobData.put("triggerType", triggerType);
+        return jobData;
     }
 
     private void createZkJob(JobDetail jobDetail) {
@@ -284,8 +291,10 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     /**
      * Trigger the job immediately
      * @param jobId the job id
+     * @param triggerType the trigger type
+     * @see JobTriggerType
      */
-    public Boolean triggerJob(Long jobId){
+    public Boolean triggerJob(Long jobId, JobTriggerType triggerType){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
         if (!findResp.isSuccess()){
@@ -293,10 +302,10 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
             return Boolean.TRUE;
         }
 
-        return triggerJob(findResp.getData());
+        return triggerJob(findResp.getData(), triggerType);
     }
 
-    public Boolean triggerJob(JobDetail jobDetail) {
+    public Boolean triggerJob(JobDetail jobDetail, JobTriggerType triggerType) {
 
         try {
             JobKey jobKey = buildJobKey(jobDetail);
@@ -307,7 +316,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
                 return Boolean.TRUE;
             }
 
-            scheduler.triggerJob(jobKey);
+            scheduler.triggerJob(jobKey, buildJobData(jobDetail, triggerType));
 
             return Boolean.TRUE;
         } catch (SchedulerException e) {

@@ -290,4 +290,13 @@ public interface JobService {
      * @return the job's next page jobs
      */
     Response<Page<DependenceJob>> pagingNextJobs(Long jobId, Integer pageNo, Integer pageSize);
+
+    /**
+     * Paging the job's next job ids
+     * @param jobId the job id
+     * @param pageNo the page number
+     * @param pageSize the page size
+     * @return the job's next page job ids
+     */
+    Response<Page<Long>> pagingNextJobIds(Long jobId, Integer pageNo, Integer pageSize);
 }

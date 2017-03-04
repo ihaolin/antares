@@ -14,6 +14,7 @@ import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.common.model.JobInstanceShard;
 import me.hao0.antares.common.model.enums.JobInstanceShardStatus;
 import me.hao0.antares.common.model.enums.JobInstanceStatus;
+import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.common.util.CollectionUtil;
 import me.hao0.antares.common.util.Crons;
 import me.hao0.antares.store.service.JobService;
@@ -188,18 +189,17 @@ public class Jobs {
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
-        i18nJobInstances(pagingResp.getData().getData());
+        formatJobInstances(pagingResp.getData().getData());
 
         return JsonResponse.ok(pagingResp.getData());
     }
 
-    private void i18nJobInstances(List<JobInstanceDto> instances) {
+    private void formatJobInstances(List<JobInstanceDto> instances) {
 
         if (!CollectionUtil.isNullOrEmpty(instances)){
-            JobInstanceStatus instanceStatus;
             for (JobInstanceDto instance : instances){
-                instanceStatus = JobInstanceStatus.from(instance.getStatus());
-                instance.setStatusDesc(messages.get(instanceStatus.code()));
+                instance.setStatusDesc(messages.get(JobInstanceStatus.from(instance.getStatus()).code()));
+                instance.setTriggerTypeDesc(messages.get(JobTriggerType.from(instance.getTriggerType()).code()));
             }
         }
 

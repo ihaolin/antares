@@ -2,6 +2,7 @@ package me.hao0.antares.server.schedule;
 
 
 import me.hao0.antares.common.dto.JobDetail;
+import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.server.schedule.executor.JobExecutor;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -25,8 +26,14 @@ public class JobAgent implements Job {
         this.jobDetail = jobDetail;
     }
 
+    private JobTriggerType triggerType;
+
+    public void setTriggerType(JobTriggerType triggerType) {
+        this.triggerType = triggerType;
+    }
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
-        executor.execute(jobDetail, context);
+        executor.execute(jobDetail, triggerType, context);
     }
 }

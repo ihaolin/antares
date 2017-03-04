@@ -8,11 +8,14 @@ import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.enums.JobInstanceStatus;
 import me.hao0.antares.common.model.enums.JobState;
+import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.common.util.Constants;
 import me.hao0.antares.common.util.Executors;
 import me.hao0.antares.common.util.Systems;
 import me.hao0.antares.server.cluster.client.ClientCluster;
 import me.hao0.antares.server.cluster.server.ServerHost;
+import me.hao0.antares.server.event.core.EventDispatcher;
+import me.hao0.antares.server.event.job.JobFinishedEvent;
 import me.hao0.antares.server.exception.JobInstanceCreateException;
 import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.store.service.JobService;
@@ -43,11 +46,14 @@ public class DefaultJobExecutor implements JobExecutor {
     @Autowired
     private JobSupport jobSupport;
 
+    @Autowired
+    private EventDispatcher eventDispatcher;
+
     private final ExecutorService asyncExecutor =
             Executors.newExecutor(Systems.cpuNum(), 10000, "DEFAULT-JOB-ASYNC-EXECUTOR-");
 
     @Override
-    public void execute(final JobDetail jobDetail, JobExecutionContext context) {
+    public void execute(final JobDetail jobDetail, JobTriggerType triggerType, JobExecutionContext context) {
 
         final String appName = jobDetail.getApp().getAppName();
         final String jobClass = jobDetail.getJob().getClazz();
@@ -57,22 +63,20 @@ public class DefaultJobExecutor implements JobExecutor {
 
             Logs.info("The job({}/{}) is fired.", appName, jobClass);
 
-            // submit the async task
-            asyncExecutor.submit(new JobInstanceAsyncTask(appName, jobClass, context));
+            if (triggerType == JobTriggerType.DEFAULT){
+                // refresh the job fire time if triggered by scheduler
+                asyncExecutor.submit(new RefreshJobFireTimeTask(appName, jobClass, context));
+            }
 
             if (!canRunJobInstance(appName, jobClass)){
                 return;
             }
 
-            // TODO blocking until dependency jobs finished
-
-            // TODO invoke execute recursively
-
             // job is running
             jobSupport.updateJobStateDirectly(appName, jobClass, JobState.RUNNING);
 
             // create the job instance and shards
-            instance = createInstanceAndShards(jobDetail);
+            instance = createInstanceAndShards(jobDetail, triggerType);
 
             // trigger the clients to pull shards
             jobSupport.triggerJobInstance(appName, jobClass, instance);
@@ -83,6 +87,9 @@ public class DefaultJobExecutor implements JobExecutor {
             // be ready to wait
             // maybe now the job is paused, stopped, ..., so need to expect the job state
             jobSupport.updateJobStateSafely(appName, jobClass, JobState.WAITING);
+
+            // publish job finish event
+            eventDispatcher.publish(new JobFinishedEvent(instance.getJobId(), instance.getId()));
 
             // job has finished
         } catch (JobStateTransferInvalidException e){
@@ -150,11 +157,12 @@ public class DefaultJobExecutor implements JobExecutor {
      * @param detail the job detail
      * @return the new job instance
      */
-    private JobInstance createInstanceAndShards(JobDetail detail) {
+    private JobInstance createInstanceAndShards(JobDetail detail, JobTriggerType triggerType) {
 
         JobInstance instance = new JobInstance();
         instance.setJobId(detail.getJob().getId());
         instance.setStatus(JobInstanceStatus.RUNNING.value());
+        instance.setTriggerType(triggerType.value());
         instance.setServer(serverHost.get());
         instance.setStartTime(new Date());
 
@@ -166,7 +174,7 @@ public class DefaultJobExecutor implements JobExecutor {
         return instance;
     }
 
-    private class JobInstanceAsyncTask implements Runnable {
+    private class RefreshJobFireTimeTask implements Runnable {
 
         private final String appName;
 
@@ -174,7 +182,7 @@ public class DefaultJobExecutor implements JobExecutor {
 
         private final JobExecutionContext context;
 
-        public JobInstanceAsyncTask(String appName, String jobClass, JobExecutionContext context) {
+        public RefreshJobFireTimeTask(String appName, String jobClass, JobExecutionContext context) {
             this.appName = appName;
             this.jobClass = jobClass;
             this.context = context;
@@ -185,23 +193,18 @@ public class DefaultJobExecutor implements JobExecutor {
             try {
 
                 // update job fire time info
-                updateJobFireTime(appName, jobClass, context);
+                JobFireTime jobFireTime = new JobFireTime();
+
+                jobFireTime.setCurrent(Dates.format(context.getFireTime()));
+                jobFireTime.setPrev(Dates.format(context.getPreviousFireTime()));
+                jobFireTime.setNext(Dates.format(context.getNextFireTime()));
+
+                jobSupport.updateJobFireTime(appName, jobClass, jobFireTime);
 
             } catch (Exception e){
                 Logs.error("failed to execute async task when execute job({}/{}), cause: {}.",
                         appName, jobClass, Throwables.getStackTraceAsString(e));
             }
         }
-    }
-
-    private void updateJobFireTime(String appName, String jobClass, JobExecutionContext context) {
-
-        JobFireTime jobFireTime = new JobFireTime();
-
-        jobFireTime.setCurrent(Dates.format(context.getFireTime()));
-        jobFireTime.setPrev(Dates.format(context.getPreviousFireTime()));
-        jobFireTime.setNext(Dates.format(context.getNextFireTime()));
-
-        jobSupport.updateJobFireTime(appName, jobClass, jobFireTime);
     }
 }

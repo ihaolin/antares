@@ -17,4 +17,11 @@ public abstract class JobEvent implements Event {
     public Long getJobId() {
         return jobId;
     }
+
+    @Override
+    public String toString() {
+        return "JobEvent{" +
+                "jobId=" + jobId +
+                '}';
+    }
 }

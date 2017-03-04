@@ -17,4 +17,11 @@ public class JobFinishedEvent extends JobEvent {
     public Long getJobInstanceId() {
         return jobInstanceId;
     }
+
+    @Override
+    public String toString() {
+        return "JobFinishedEvent{" +
+                "jobInstanceId=" + jobInstanceId +
+                "} " + super.toString();
+    }
 }

@@ -34,6 +34,16 @@ public class JobInstanceDto implements Serializable {
     private String statusDesc;
 
     /**
+     * The trigger type
+     */
+    private Integer triggerType;
+
+    /**
+     * The trigger type desc
+     */
+    private String triggerTypeDesc;
+
+    /**
      * The server, scheduling this job
      */
     private String server;
@@ -93,6 +103,22 @@ public class JobInstanceDto implements Serializable {
         this.statusDesc = statusDesc;
     }
 
+    public Integer getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(Integer triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public String getTriggerTypeDesc() {
+        return triggerTypeDesc;
+    }
+
+    public void setTriggerTypeDesc(String triggerTypeDesc) {
+        this.triggerTypeDesc = triggerTypeDesc;
+    }
+
     public String getServer() {
         return server;
     }
@@ -140,9 +166,12 @@ public class JobInstanceDto implements Serializable {
                 ", jobId=" + jobId +
                 ", status=" + status +
                 ", statusDesc='" + statusDesc + '\'' +
+                ", triggerType=" + triggerType +
+                ", triggerTypeDesc='" + triggerTypeDesc + '\'' +
                 ", server='" + server + '\'' +
                 ", startTime='" + startTime + '\'' +
                 ", endTime='" + endTime + '\'' +
+                ", costTime='" + costTime + '\'' +
                 ", cause='" + cause + '\'' +
                 '}';
     }

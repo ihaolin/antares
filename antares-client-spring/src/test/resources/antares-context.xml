@@ -21,9 +21,12 @@
 
 	<!-- The jobs -->
 	<bean class="me.hao0.antares.client.job.DemoJob" />
+	<bean class="me.hao0.antares.client.job.DemoJobA" />
 
 	<bean class="me.hao0.antares.client.job.HelloJob" />
 
 	<bean class="me.hao0.antares.client.job.MyScriptJob" />
+
+
 
 </beans>

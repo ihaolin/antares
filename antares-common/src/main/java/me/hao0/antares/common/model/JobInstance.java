@@ -2,6 +2,8 @@ package me.hao0.antares.common.model;
 
 import me.hao0.antares.common.anno.RedisModel;
 import me.hao0.antares.common.model.enums.JobInstanceStatus;
+import me.hao0.antares.common.model.enums.JobTriggerType;
+
 import java.util.Date;
 
 /**
@@ -29,6 +31,12 @@ public class JobInstance implements Model<Long> {
      * @see JobInstanceStatus
      */
     private Integer status;
+
+    /**
+     * The trigger type
+     * @see JobTriggerType
+     */
+    private Integer triggerType;
 
     /**
      * The server, scheduling this job
@@ -105,6 +113,14 @@ public class JobInstance implements Model<Long> {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(Integer triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getServer() {
@@ -187,6 +203,7 @@ public class JobInstance implements Model<Long> {
                 "id=" + id +
                 ", jobId=" + jobId +
                 ", status=" + status +
+                ", triggerType=" + triggerType +
                 ", server='" + server + '\'' +
                 ", maxShardPullCount=" + maxShardPullCount +
                 ", jobParam='" + jobParam + '\'' +

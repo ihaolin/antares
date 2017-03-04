@@ -1,5 +1,6 @@
 package me.hao0.antares.server.api;
 
+import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.server.cluster.server.ServerHost;
 import me.hao0.antares.server.schedule.JobPool;
 import me.hao0.antares.store.service.JobService;
@@ -48,7 +49,17 @@ public class Servers {
      */
     @RequestMapping(value = JOB_TRIGGER + "/{jobId}", method = RequestMethod.POST)
     public Boolean triggerJob(@PathVariable(value = "jobId") Long jobId){
-        return jobPool.triggerJob(jobId);
+        return jobPool.triggerJob(jobId, JobTriggerType.API);
+    }
+
+    /**
+     * Notify the job trigger
+     * @param jobId the job id
+     * @return return true if notify successfully, or false
+     */
+    @RequestMapping(value = JOB_NOTIFY + "/{jobId}", method = RequestMethod.POST)
+    public Boolean notifyJob(@PathVariable(value = "jobId") Long jobId){
+        return jobPool.triggerJob(jobId, JobTriggerType.NOTIFY);
     }
 
     /**

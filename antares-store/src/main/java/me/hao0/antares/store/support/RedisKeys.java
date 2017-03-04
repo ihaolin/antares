@@ -163,7 +163,7 @@ public final class RedisKeys {
     }
 
     /**
-     * The key of the job's next job id list key
+     * The key of the job's next job id set key
      * @param jobId the job id
      * @return jobs:${jobId}:next
      */

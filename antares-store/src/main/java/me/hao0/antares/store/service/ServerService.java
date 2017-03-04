@@ -47,6 +47,13 @@ public interface ServerService {
     Response<Boolean> triggerJob(Long jobId);
 
     /**
+     * Notify the job to trigger
+     * @param jobId the job id
+     * @return return true if trigger successfully, or false
+     */
+    Response<Boolean> notifyJob(Long jobId);
+
+    /**
      * Pause the job
      * @param jobId the job id
      * @return return true if pause successfully, or false

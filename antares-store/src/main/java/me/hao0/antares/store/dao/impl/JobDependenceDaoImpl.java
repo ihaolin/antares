@@ -1,10 +1,13 @@
 package me.hao0.antares.store.dao.impl;
 
+import com.google.common.collect.Lists;
 import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.store.dao.JobDependenceDao;
 import me.hao0.antares.store.support.RedisKeys;
 import me.hao0.antares.store.util.Page;
 import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The job dependency dao
@@ -17,7 +20,9 @@ public class JobDependenceDaoImpl extends RedisDao<JobDependence> implements Job
     @Override
     public Boolean addDependence(JobDependence dependence) {
         String jobNextJobsKey = RedisKeys.keyOfJobNextJobs(dependence.getJobId());
-        return redis.opsForList().leftPush(jobNextJobsKey, String.valueOf(dependence.getNextJobId())) > 0L;
+        Long nextJobId = dependence.getNextJobId();
+        redis.opsForZSet().add(jobNextJobsKey, nextJobId + "", nextJobId.doubleValue());
+        return Boolean.TRUE;
     }
 
     @Override
@@ -25,12 +30,21 @@ public class JobDependenceDaoImpl extends RedisDao<JobDependence> implements Job
 
         String jobNextJobsKey = RedisKeys.keyOfJobNextJobs(jobId);
 
-        Long total = count(jobNextJobsKey);
+        Long total = redis.opsForZSet().zCard(jobNextJobsKey);
         if (total <= 0L){
             return Page.empty();
         }
 
-        return new Page<>(total, listIds(jobNextJobsKey, offset, limit));
+        Set<String> setIds =  redis.opsForZSet().reverseRange(jobNextJobsKey, offset, offset + limit - 1);
+        List<Long> ids = Lists.newArrayListWithExpectedSize(setIds.size());
+        for (String idStr : setIds){
+            ids.add(Long.valueOf(idStr));
+        }
+
+        // Collections.sort(ids);
+        // Collections.reverse(ids);
+
+        return new Page<>(total, ids);
     }
 
     @Override
@@ -43,6 +57,6 @@ public class JobDependenceDaoImpl extends RedisDao<JobDependence> implements Job
     @Override
     public Boolean deleteNextJobId(Long jobId, Long nextJobId) {
         String jobNextJobsKey = RedisKeys.keyOfJobNextJobs(jobId);
-        return redis.opsForList().remove(jobNextJobsKey, 1L, String.valueOf(nextJobId)) > 0L;
+        return redis.opsForZSet().remove(jobNextJobsKey, String.valueOf(nextJobId)) > 0L;
     }
 }
