@@ -8,6 +8,7 @@ import me.hao0.antares.common.dto.JobInstanceDetail;
 import me.hao0.antares.common.dto.JobInstanceDto;
 import me.hao0.antares.common.dto.JobInstanceShardDto;
 import me.hao0.antares.common.dto.JsonResponse;
+import me.hao0.antares.common.dto.SaveNextJob;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.model.JobConfig;
 import me.hao0.antares.common.model.JobDependence;
@@ -468,17 +469,17 @@ public class Jobs {
     /**
      * Add the job dependence
      * @param jobId the job id
-     * @param nextJobId the next job id
+     * @param nextJob the next job
      * @return return true if add successfully, or false
      */
-    @RequestMapping(value = "/{jobId}/{nextJobId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{jobId}/next", method = RequestMethod.POST)
     public JsonResponse addDependenceJob(
                 @PathVariable("jobId") Long jobId,
-                @PathVariable("nextJobId") Long nextJobId){
+                @RequestBody SaveNextJob nextJob){
 
         JobDependence dependence = new JobDependence();
         dependence.setJobId(jobId);
-        dependence.setNextJobId(nextJobId);
+        dependence.setNextJobId(nextJob.getNextJobId());
 
         Response<Boolean> addResp = jobService.addJobDependence(dependence);
         if (!addResp.isSuccess()){
@@ -515,7 +516,7 @@ public class Jobs {
      * @param nextJobId the next job id
      * @return return true if add successfully, or false
      */
-    @RequestMapping(value = "/{jobId}/{nextJobId}/del", method = RequestMethod.POST)
+    @RequestMapping(value = "/{jobId}/del_next/{nextJobId}", method = RequestMethod.POST)
     public JsonResponse deleteDependenceJob(
             @PathVariable("jobId") Long jobId,
             @PathVariable("nextJobId") Long nextJobId){

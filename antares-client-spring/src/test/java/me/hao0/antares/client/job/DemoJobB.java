@@ -7,18 +7,18 @@ import java.util.Random;
  * Author: haolin
  * Email:  haolin.h0@gmail.com
  */
-public class DemoJobA implements DefaultJob {
+public class DemoJobB implements DefaultJob {
 
     private final Random random = new Random();
 
     @Override
     public JobResult execute(JobContext context) {
-        System.out.println("DemoJobA start...");
+        System.out.println("DemoJobB start...");
         System.out.println("context: " + context);
 
         Sleeps.sleep(random.nextInt(10) + 1);
 
-        System.out.println("DemoJobA end...");
+        System.out.println("DemoJobB end...");
 
         return JobResult.SUCCESS;
     }

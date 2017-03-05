@@ -730,6 +730,12 @@ public class JobServiceImpl implements JobService {
     @Override
     public Response<Boolean> addJobDependence(JobDependence dependence) {
         try {
+
+            Job nextJob = jobDao.findById(dependence.getNextJobId());
+            if (nextJob == null){
+                return Response.notOk("job.not.exist");
+            }
+
             return Response.ok(jobDependenceDao.addDependence(dependence));
         } catch (Exception e){
             Logs.error("failed to add the job dependence({}), cause: {}",
