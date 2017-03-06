@@ -19,7 +19,9 @@ public class JsonResponse<T> implements Serializable {
 
     public static final JsonResponse AUTH_FAIL = JsonResponse.notOk(401, "认证失败");
 
-    public static final JsonResponse PARAM_MISSING = JsonResponse.notOk(400, "参数缺失");
+    public static final JsonResponse PARAM_MISSING = JsonResponse.notOk(400, "params.missing");
+
+    public static final JsonResponse PARAM_FORMAT_ERROR = JsonResponse.notOk(400, "params.format.error");
 
     public static final JsonResponse SERVER_ERR = JsonResponse.notOk(ERR, "服务器异常");
 
