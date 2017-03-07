@@ -14,6 +14,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -565,6 +566,11 @@ public class ZkClient {
      */
     public List<String> gets(String path){
         try {
+
+            if (!checkExists(path)){
+                return Collections.emptyList();
+            }
+
             return client.getChildren().forPath(path);
         } catch (Exception e) {
             handleConnectionLoss(e);

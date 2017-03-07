@@ -36,6 +36,7 @@ public class SimpleJobStateMachine {
         configure(JobState.WAITING, JobState.STOPPED);
         configure(JobState.RUNNING, JobState.STOPPED);
         configure(JobState.FAILED, JobState.STOPPED);
+        configure(JobState.STOPPED, JobState.STOPPED);
 
         // may be failed when update the job to waiting after finish job
         configure(JobState.WAITING, JobState.FAILED);

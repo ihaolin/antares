@@ -121,9 +121,12 @@ public class JobServiceImpl implements JobService {
     private JobDetail buildJobDetail(JobEditDto editing) {
 
         JobDetail jobDetail = new JobDetail();
-        Job job;
+
         JobConfig config;
-        if (editing.getJobId() == null){
+
+        Job job = jobDao.findByJobClass(editing.getAppId(), editing.getClazz());
+        if (job == null){
+
             // create
             job = new Job();
             job.setAppId(editing.getAppId());
@@ -131,18 +134,12 @@ public class JobServiceImpl implements JobService {
             job.setClazz(editing.getClazz());
 
             updateJobAttrs(editing, job);
-
             config = new JobConfig();
             updateJobConfigAttrs(editing, config);
 
         } else {
             // update
-            job = jobDao.findById(editing.getJobId());
-            if (job == null){
-                throw new JobNotExistException(editing.getJobId());
-            }
             updateJobAttrs(editing, job);
-
             config = jobConfigDao.findByJobId(job.getId());
             updateJobConfigAttrs(editing, config);
         }
