@@ -1,4 +1,4 @@
-package me.hao0.antares.demo.jobs.dep;
+package me.hao0.antares.demo.jobs;
 
 import me.hao0.antares.client.job.DefaultJob;
 import me.hao0.antares.client.job.JobContext;
