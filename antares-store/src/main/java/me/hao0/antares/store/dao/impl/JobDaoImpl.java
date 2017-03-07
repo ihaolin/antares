@@ -36,7 +36,8 @@ public class JobDaoImpl extends RedisDao<Job> implements JobDao {
 
     @Override
     public Job findByJobClass(Long appId, String clazz) {
-        return findById(findIdByJobClass(appId, clazz));
+        Long jobId = findIdByJobClass(appId, clazz);
+        return jobId == null ? null : findById(jobId);
     }
 
     @Override
