@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * The job event subscriber
+ * The job event listener
  * Author: haolin
  * Email:  haolin.h0@gmail.com
  */
@@ -60,7 +60,7 @@ public class JobEventListener implements EventListener {
                 serverService.notifyJob(nextJobId);
             }
 
-            break;
+            pageNo ++;
         }
     }
 }

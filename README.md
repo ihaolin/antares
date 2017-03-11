@@ -36,7 +36,7 @@
 
 ### 任务依赖
 
-+ 计划开发中。
++ antares支持**树形任务依赖**，当某任务执行完成后，会通知其**后置任务**执行。
 
 ## 名称术语
 
@@ -401,6 +401,10 @@
 + 任务配置：
 
 	![](screenshots/job_config.png)
+
++ 任务依赖：
+
+   ![](screenshots/job_dependence.png)
 
 + 任务管控：
 
