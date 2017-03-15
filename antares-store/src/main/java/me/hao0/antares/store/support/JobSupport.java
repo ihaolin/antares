@@ -441,7 +441,7 @@ public class JobSupport implements DisposableBean {
             updateJobStateSafely(appName, jobClass, JobState.WAITING);
 
         } catch (Exception e){
-            Logs.error("failed to force stop job instance(jobDetial={}, jobInstanceId={}), cause: {}",
+            Logs.error("failed to force stop job instance(jobDetail={}, jobInstanceId={}), cause: {}",
                     jobDetail, jobInstanceId, Throwables.getStackTraceAsString(e));
         } finally {
             jobInstanceLock.unlock();
