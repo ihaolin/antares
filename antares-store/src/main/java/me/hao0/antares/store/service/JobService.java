@@ -246,11 +246,11 @@ public interface JobService {
     Response<JobInstanceDetail> findJobInstanceDetail(Long jobInstanceId);
 
     /**
-     * Force the finish the job
+     * Terminate the current job instance
      * @param jobId the job id
      * @return return true if force to finish successfully
      */
-    Response<Boolean> forceFinishJob(Long jobId);
+    Response<Boolean> terminateJob(Long jobId);
 
     /**
      * Unbind the job from the server

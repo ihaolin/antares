@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobFireTime;
+import me.hao0.antares.common.dto.JobInstanceWaitResp;
 import me.hao0.antares.common.dto.ShardFinishDto;
 import me.hao0.antares.common.exception.JobStateTransferInvalidException;
 import me.hao0.antares.common.log.Logs;
@@ -27,12 +28,12 @@ import me.hao0.antares.store.dao.*;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Job support
@@ -83,14 +84,15 @@ public class JobSupport implements DisposableBean {
      * Waiting the job instance finished
      * @param appName the app name
      * @param jobClass the job class
-     * @param instance the job instance
-     * @return return true if job finished successfully
+     * @param timeout the timeout seconds to waiting the job instance finished
+     * @param jobInstanceId the job instance id
+     * @return return the job instance wait response
      */
-    public Boolean waitingJobInstanceFinish(final String appName, final String jobClass, final JobInstance instance) {
+    public JobInstanceWaitResp waitingJobInstanceFinish(final String appName, final String jobClass, final Long jobInstanceId, long timeout) {
 
         final CountDownLatch latch = new CountDownLatch(1);
 
-        String jobInstanceNode = ZkPaths.pathOfJobInstance(appName, jobClass, instance.getId());
+        String jobInstanceNode = ZkPaths.pathOfJobInstance(appName, jobClass, jobInstanceId);
 
         NodeWatcher watcher = zk.client().newNodeWatcher(jobInstanceNode, new NodeListener() {
             @Override
@@ -101,17 +103,31 @@ public class JobSupport implements DisposableBean {
         });
 
         try {
-            Logs.info("Waiting the job({}/{}/{}) to be finished.", appName, jobClass, instance.getId());
-            latch.await();
-            watcher.stop();
+
+            Logs.info("Waiting the job({}/{}/{}) with timeout({}) to be finished.", appName, jobClass, jobInstanceId, timeout);
+
+            if (timeout > 0L){
+                // need take in account the timeout
+                if (!latch.await(timeout, TimeUnit.SECONDS)){
+                    return JobInstanceWaitResp.timeout();
+                }
+            } else {
+                // no need take in account the timeout
+                latch.await();
+            }
+
         } catch (InterruptedException e) {
-            Logs.error("occur error when waiting the job finish: {}", Throwables.getStackTraceAsString(e));
-            return Boolean.FALSE;
+            // occur error
+            throw new RuntimeException(e);
+        } finally {
+            if (watcher != null){
+                watcher.stop();
+            }
         }
 
-        Logs.info("The job({}/{}/{}) has finished.", appName, jobClass, instance.getId());
+        Logs.info("The job({}/{}/{}) has finished.", appName, jobClass, jobInstanceId);
 
-        return Boolean.TRUE;
+        return JobInstanceWaitResp.success();
     }
 
 
@@ -150,9 +166,7 @@ public class JobSupport implements DisposableBean {
      */
     public Boolean deleteJobInstances(String appName, String jobClass) {
 
-        String jobInstancesNode = ZkPaths.pathOfJobInstances(appName, jobClass);
-
-        List<String> instanceIds = zk.client().gets(jobInstancesNode);
+        List<String> instanceIds = findJobInstances(appName, jobClass);
         if (!CollectionUtil.isNullOrEmpty(instanceIds)){
             for (String instanceId : instanceIds){
                 deleteJobInstance(appName, jobClass, Long.valueOf(instanceId));
@@ -160,6 +174,17 @@ public class JobSupport implements DisposableBean {
         }
 
         return Boolean.TRUE;
+    }
+
+    /**
+     * Find the job instance ids of the job
+     * @param appName the app name
+     * @param jobClass the job class
+     * @return the job instance ids
+     */
+    public List<String> findJobInstances(String appName, String jobClass){
+        String jobInstancesNode = ZkPaths.pathOfJobInstances(appName, jobClass);
+        return zk.client().gets(jobInstancesNode);
     }
 
     /**
@@ -330,7 +355,6 @@ public class JobSupport implements DisposableBean {
     /**
      * Check the job instance finish or not
      * @param shardFinishDto the shard finish dto
-     * @return return true if check successfully, or false
      */
     public void checkJobInstanceFinish(final ShardFinishDto shardFinishDto){
         executor.submit(new Runnable() {
@@ -347,30 +371,6 @@ public class JobSupport implements DisposableBean {
     }
 
     /**
-     * Find the current job instance id
-     * @param appName the app name
-     * @param jobClass the job clazz
-     * @return the current job instance id, which the minimal id if there are multiple instances
-     */
-    public Long findRunningJobInstanceId(String appName, String jobClass) {
-        String jobInstancesPath = ZkPaths.pathOfJobInstances(appName, jobClass);
-
-        List<String> instanceIds = zk.client().gets(jobInstancesPath);
-        if (CollectionUtil.isNullOrEmpty(instanceIds)){
-            return null;
-        }
-
-        if (instanceIds.size() == 1){
-            return Long.valueOf(instanceIds.get(0));
-        }
-
-        // the id minimal
-        Collections.sort(instanceIds);
-
-        return Long.valueOf(instanceIds.get(0));
-    }
-
-    /**
      * Check the job has one running job instance
      * @param appName the app name
      * @param jobClass the job class
@@ -383,6 +383,69 @@ public class JobSupport implements DisposableBean {
         List<String> instances = zk.client().gets(jobInstanceNodePath);
 
         return !CollectionUtil.isNullOrEmpty(instances);
+    }
+
+    /**
+     * Force to stop the current job instance
+     * @param jobDetail the job detail
+     * @param finalStatus the final status of the job instance
+     */
+    public Boolean forceStopJobInstance(JobDetail jobDetail, JobInstanceStatus finalStatus) {
+
+        List<String> jobInstanceIds = findJobInstances(jobDetail.getApp().getAppName(), jobDetail.getJob().getClazz());
+        if (!CollectionUtil.isNullOrEmpty(jobInstanceIds)){
+            for (String jobInstanceId : jobInstanceIds){
+                forceStopJobInstance(jobDetail, Long.valueOf(jobInstanceId), finalStatus);
+            }
+        }
+
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Force to stop the current job instance
+     * @param jobDetail the job detail
+     * @param jobInstanceId the job instance id
+     * @param finalStatus the final status
+     * @see JobInstanceStatus
+     */
+    private void forceStopJobInstance(JobDetail jobDetail, Long jobInstanceId, JobInstanceStatus finalStatus) {
+
+        // lock the job instance
+        // avoid the job instance finished before
+        Lock jobInstanceLock = lockJobInstance(jobInstanceId);
+        while (!jobInstanceLock.lock(5000)){
+            // lock timeout
+            Logs.warn("failed to lock the job instance when force stop job instance(jobDetail={}, jobInstanceId={}).", jobDetail, jobInstanceId);
+        }
+
+        try {
+
+            JobInstance instance = jobInstanceDao.findById(jobInstanceId);
+            if (JobInstanceStatus.isFinal(instance.getStatus())){
+                // job instance is final
+                return;
+            }
+
+            // try to delete the job instance from zk
+            String appName = jobDetail.getApp().getAppName();
+            String jobClass = jobDetail.getJob().getClazz();
+            if(!deleteJobInstance(appName, jobClass, instance)){
+                Logs.warn("failed to delete job instance from zk when force stop job instance((jobDetail={}, jobInstance={})).", instance, jobDetail);
+            }
+
+            instance.setUtime(new Date());
+            instance.setStatus(finalStatus.value());
+            jobInstanceDao.save(instance);
+
+            updateJobStateSafely(appName, jobClass, JobState.WAITING);
+
+        } catch (Exception e){
+            Logs.error("failed to force stop job instance(jobDetial={}, jobInstanceId={}), cause: {}",
+                    jobDetail, jobInstanceId, Throwables.getStackTraceAsString(e));
+        } finally {
+            jobInstanceLock.unlock();
+        }
     }
 
     /**
@@ -424,7 +487,7 @@ public class JobSupport implements DisposableBean {
 
             JobInstance instance = jobInstanceDao.findById(instanceId);
             if (JobInstanceStatus.isFinal(instance.getStatus())){
-                // job instance is final(success or failed)
+                // job instance is final
                 return Boolean.TRUE;
             }
 
@@ -435,11 +498,11 @@ public class JobSupport implements DisposableBean {
 
             if (Objects.equal(totalShardCount, successShardCount + failedShardCount)){
 
-                // try to  delete the job instance from zk
+                // try to delete the job instance from zk
                 Job job = jobDao.findById(instance.getJobId());
                 App app = appDao.findById(job.getAppId());
                 if(!deleteJobInstance(app.getAppName(), job.getClazz(), instance)){
-                    Logs.warn("failed to delete job instance({}) from zk.", instance);
+                    Logs.warn("failed to delete job instance({}) from zk when check the job instance finish.", instance);
                 }
 
                 // update the job instance

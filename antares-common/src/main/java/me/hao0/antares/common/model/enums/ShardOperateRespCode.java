@@ -15,9 +15,9 @@ public enum ShardOperateRespCode {
     INSTANCE_NOT_EXIST(0),
 
     /**
-     * The job instance has finished
+     * The job instance is final
      */
-    INSTANCE_FINISH(1),
+    INSTANCE_IS_FINAL(1),
 
 
     /******* FOR SHARD PULL *******/
@@ -115,7 +115,7 @@ public enum ShardOperateRespCode {
     }
 
     /**
-     * Need finish again
+     * Need finish again or not
      * @param code the response code
      * @return return true if pull again, or false
      */
@@ -124,7 +124,7 @@ public enum ShardOperateRespCode {
     }
 
     /**
-     * Need return again
+     * Need return again or not
      * @param code the response code
      * @return return true if push again, or false
      */
@@ -133,11 +133,11 @@ public enum ShardOperateRespCode {
     }
 
     /**
-     * Need clean the job instance
+     * Need clean the job instance or not
      * @param code the shard operate response code
      * @return return true if need clean job instance, thinking that the dirty job instance data in zk
      */
     public static Boolean needCleanJobInstance(ShardOperateRespCode code) {
-        return code == INSTANCE_FINISH || code == INSTANCE_NOT_EXIST;
+        return code == INSTANCE_IS_FINAL || code == INSTANCE_NOT_EXIST;
     }
 }

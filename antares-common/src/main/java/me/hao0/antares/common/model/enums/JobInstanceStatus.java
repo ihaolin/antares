@@ -31,7 +31,12 @@ public enum JobInstanceStatus {
     /**
      * The job instance is forced to be terminated
      */
-    TERMINATED(5, "job.instance.status.terminated");
+    TERMINATED(5, "job.instance.status.terminated"),
+
+    /**
+     * The job instance is timeout
+     */
+    TIMEOUT_CLOSED(6, "job.instance.status.timeout");
 
     private Integer value;
 
@@ -63,6 +68,7 @@ public enum JobInstanceStatus {
         JobInstanceStatus instanceStatus = from(status);
         return instanceStatus == SUCCESS
                 || instanceStatus == FAILED
-                || instanceStatus == TERMINATED;
+                || instanceStatus == TERMINATED
+                || instanceStatus == TIMEOUT_CLOSED;
     }
 }

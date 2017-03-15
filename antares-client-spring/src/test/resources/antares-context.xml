@@ -28,6 +28,7 @@
 
 	<bean class="me.hao0.antares.client.job.MyScriptJob" />
 
+	<bean class="me.hao0.antares.client.job.TimeoutJob" />
 
 
 </beans>

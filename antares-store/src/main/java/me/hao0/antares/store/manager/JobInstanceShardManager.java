@@ -1,6 +1,5 @@
 package me.hao0.antares.store.manager;
 
-import com.google.common.base.Objects;
 import me.hao0.antares.common.dto.ShardFinishDto;
 import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.JobInstanceShard;

@@ -2,15 +2,15 @@ package me.hao0.antares.server.event.job;
 
 
 /**
- * The event when the job is finished
+ * The event when the job is timeout
  * Author: haolin
  * Email:  haolin.h0@gmail.com
  */
-public class JobFinishedEvent extends JobEvent {
+public class JobTimeoutEvent extends JobEvent {
 
     private Long jobInstanceId;
 
-    public JobFinishedEvent(Long jobId, Long jobInstanceId) {
+    public JobTimeoutEvent(Long jobId, Long jobInstanceId) {
         super(jobId);
         this.jobInstanceId = jobInstanceId;
     }

@@ -33,6 +33,8 @@ public class JobEditDto implements Serializable {
 
     private Boolean misfire;
 
+    private Long timeout;
+
     public Long getAppId() {
         return appId;
     }
@@ -121,6 +123,14 @@ public class JobEditDto implements Serializable {
         this.misfire = misfire;
     }
 
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Long timeout) {
+        this.timeout = timeout;
+    }
+
     @Override
     public String toString() {
         return "JobEditDto{" +
@@ -135,6 +145,7 @@ public class JobEditDto implements Serializable {
                 ", shardCount=" + shardCount +
                 ", shardParams='" + shardParams + '\'' +
                 ", misfire=" + misfire +
+                ", timeout=" + timeout +
                 '}';
     }
 }

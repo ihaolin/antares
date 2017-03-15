@@ -156,6 +156,7 @@ public class JobServiceImpl implements JobService {
         config.setShardParams(editing.getShardParams());
         config.setMaxShardPullCount(editing.getMaxShardPullCount());
         config.setMisfire(editing.getMisfire());
+        config.setTimeout(editing.getTimeout());
     }
 
     private void updateJobAttrs(JobEditDto editing, Job job) {
@@ -692,7 +693,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public Response<Boolean> forceFinishJob(Long jobId) {
+    public Response<Boolean> terminateJob(Long jobId) {
         try {
 
             JobDetail jobDetail = findJobDetail(jobId, null);
@@ -700,10 +701,7 @@ public class JobServiceImpl implements JobService {
                 return Response.notOk("job.not.exist");
             }
 
-            String appName = jobDetail.getApp().getAppName();
-            String jobClass = jobDetail.getJob().getClazz();
-
-            jobSupport.deleteJobInstances(appName, jobClass);
+            jobSupport.forceStopJobInstance(jobDetail, JobInstanceStatus.TERMINATED);
 
             return Response.ok(true);
         } catch (Exception e){
@@ -1023,10 +1021,8 @@ public class JobServiceImpl implements JobService {
             throw new ShardOperateException(ShardOperateRespCode.INSTANCE_NOT_EXIST);
         }
 
-        JobInstanceStatus instanceStatus = JobInstanceStatus.from(instance.getStatus());
-        if (instanceStatus == JobInstanceStatus.SUCCESS
-                || instanceStatus == JobInstanceStatus.FAILED){
-            throw new ShardOperateException(ShardOperateRespCode.INSTANCE_FINISH);
+        if (JobInstanceStatus.isFinal(instance.getStatus())){
+            throw new ShardOperateException(ShardOperateRespCode.INSTANCE_IS_FINAL);
         }
 
         return instance;

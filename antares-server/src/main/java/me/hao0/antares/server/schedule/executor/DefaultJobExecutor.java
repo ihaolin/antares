@@ -3,6 +3,7 @@ package me.hao0.antares.server.schedule.executor;
 import com.google.common.base.Throwables;
 import me.hao0.antares.common.dto.JobDetail;
 import me.hao0.antares.common.dto.JobFireTime;
+import me.hao0.antares.common.dto.JobInstanceWaitResp;
 import me.hao0.antares.common.exception.JobStateTransferInvalidException;
 import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.JobInstance;
@@ -16,6 +17,7 @@ import me.hao0.antares.server.cluster.client.ClientCluster;
 import me.hao0.antares.server.cluster.server.ServerHost;
 import me.hao0.antares.server.event.core.EventDispatcher;
 import me.hao0.antares.server.event.job.JobFinishedEvent;
+import me.hao0.antares.server.event.job.JobTimeoutEvent;
 import me.hao0.antares.server.exception.JobInstanceCreateException;
 import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.store.service.JobService;
@@ -81,15 +83,21 @@ public class DefaultJobExecutor implements JobExecutor {
             // trigger the clients to pull shards
             jobSupport.triggerJobInstance(appName, jobClass, instance);
 
-            // blocking until all shards to be finished
-            jobSupport.waitingJobInstanceFinish(appName, jobClass, instance);
+            // blocking until all shards to be finished or timeout
+            Long timeout = jobDetail.getConfig().getTimeout();
+            timeout = timeout == null ? 0L : timeout;
+            JobInstanceWaitResp finishResp = jobSupport.waitingJobInstanceFinish(appName, jobClass, timeout, instance.getId());
+            if (finishResp.isSuccess()){
+                // job instance is finished successfully
+                // publish job finish event
+                eventDispatcher.publish(new JobFinishedEvent(instance.getJobId(), instance.getId()));
+            } else if (finishResp.isTimeout()){
+                // job instance is timeout
+                eventDispatcher.publish(new JobTimeoutEvent(instance.getJobId(), instance.getId()));
+            }
 
-            // be ready to wait
             // maybe now the job is paused, stopped, ..., so need to expect the job state
             jobSupport.updateJobStateSafely(appName, jobClass, JobState.WAITING);
-
-            // publish job finish event
-            eventDispatcher.publish(new JobFinishedEvent(instance.getJobId(), instance.getId()));
 
             // job has finished
         } catch (JobStateTransferInvalidException e){
@@ -128,6 +136,9 @@ public class DefaultJobExecutor implements JobExecutor {
 
     private void handleJobExecuteFailed(JobInstance instance, String appName, String jobClass, String cause) {
         try {
+
+            // TODO push an alarm event
+
 
             if (instance == null){
                 return;

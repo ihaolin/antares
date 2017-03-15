@@ -49,6 +49,11 @@ public class JobConfig implements Model<Long> {
     private Integer maxShardPullCount;
 
     /**
+     * The job timeout seconds to be closed
+     */
+    private Long timeout;
+
+    /**
      * The created time
      */
     private Date ctime;
@@ -114,6 +119,14 @@ public class JobConfig implements Model<Long> {
         this.maxShardPullCount = maxShardPullCount;
     }
 
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Long timeout) {
+        this.timeout = timeout;
+    }
+
     public Date getCtime() {
         return ctime;
     }
@@ -139,6 +152,8 @@ public class JobConfig implements Model<Long> {
                 ", param='" + param + '\'' +
                 ", shardCount=" + shardCount +
                 ", shardParams='" + shardParams + '\'' +
+                ", maxShardPullCount=" + maxShardPullCount +
+                ", timeout=" + timeout +
                 ", ctime=" + ctime +
                 ", utime=" + utime +
                 '}';

@@ -224,12 +224,12 @@ public class Jobs {
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
-        i18nShardStatus(pagingResp.getData().getData());
+        formatShardStatus(pagingResp.getData().getData());
 
         return JsonResponse.ok(pagingResp.getData());
     }
 
-    private void i18nShardStatus(List<JobInstanceShardDto> shards) {
+    private void formatShardStatus(List<JobInstanceShardDto> shards) {
 
         if (CollectionUtil.isNullOrEmpty(shards)){
             return;
@@ -408,19 +408,19 @@ public class Jobs {
     }
 
     /**
-     * Force to finish the job
+     * Terminate the current job instance
      * @param jobId the job id
      * @return the finish result
      */
-    @RequestMapping(value = "/{jobId}/force_finish")
-    public JsonResponse forceFinishJob(@PathVariable("jobId") Long jobId){
+    @RequestMapping(value = "/{jobId}/terminate")
+    public JsonResponse terminateJob(@PathVariable("jobId") Long jobId){
 
-        Response<Boolean> finishResp = jobService.forceFinishJob(jobId);
-        if (!finishResp.isSuccess()){
-            return JsonResponse.notOk(messages.get(finishResp.getErr()));
+        Response<Boolean> terminateResp = jobService.terminateJob(jobId);
+        if (!terminateResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(terminateResp.getErr()));
         }
 
-        return JsonResponse.ok(finishResp.getData());
+        return JsonResponse.ok(terminateResp.getData());
     }
 
     /**
@@ -436,7 +436,7 @@ public class Jobs {
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
-        i18nJobInstanceStatus(findResp.getData());
+        formatJobInstanceStatus(findResp.getData());
 
         return JsonResponse.ok(findResp.getData());
     }
@@ -454,12 +454,12 @@ public class Jobs {
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
-        i18nJobInstanceStatus(findResp.getData());
+        formatJobInstanceStatus(findResp.getData());
 
         return JsonResponse.ok(findResp.getData());
     }
 
-    private void i18nJobInstanceStatus(JobInstanceDetail detail){
+    private void formatJobInstanceStatus(JobInstanceDetail detail){
         if (detail != null){
             JobInstanceStatus status = JobInstanceStatus.from(detail.getStatus());
             detail.setStatusDesc(messages.get(status.code()));

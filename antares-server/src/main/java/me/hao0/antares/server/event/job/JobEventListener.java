@@ -28,10 +28,8 @@ public class JobEventListener implements EventListener {
 
     @Subscribe
     public void onJobFinished(JobFinishedEvent e){
-
         // trigger all next jobs
         notifyAllNextJobs(e);
-
     }
 
     private void notifyAllNextJobs(JobFinishedEvent e) {
@@ -62,5 +60,16 @@ public class JobEventListener implements EventListener {
 
             pageNo ++;
         }
+    }
+
+    @Subscribe
+    public void onJobTimeout(JobTimeoutEvent e){
+
+        Logs.warn("There is an job timeout event({}).", e);
+
+        //
+        // jobSupport.timeoutCloseJobInstance(e.getJobId(), e.getJobInstanceId());
+
+        // TODO push an alarm event
     }
 }
