@@ -432,6 +432,8 @@
 
 ## 常见问题
 
++ 有任何问题，请[issue](https://github.com/ihaolin/antares/issues/new)。
+
 ## 有事请烧钱
 
 + 支付宝:
