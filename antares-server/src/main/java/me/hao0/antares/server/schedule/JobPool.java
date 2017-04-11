@@ -20,7 +20,7 @@ import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.server.support.Springs;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.support.JobSupport;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobKey;

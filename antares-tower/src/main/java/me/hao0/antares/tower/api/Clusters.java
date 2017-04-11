@@ -7,7 +7,7 @@ import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.store.service.ClusterService;
 import me.hao0.antares.store.service.JobService;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import me.hao0.antares.tower.support.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

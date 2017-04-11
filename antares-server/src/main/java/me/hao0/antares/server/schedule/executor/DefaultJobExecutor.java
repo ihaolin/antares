@@ -16,13 +16,14 @@ import me.hao0.antares.common.util.Systems;
 import me.hao0.antares.server.cluster.client.ClientCluster;
 import me.hao0.antares.server.cluster.server.ServerHost;
 import me.hao0.antares.server.event.core.EventDispatcher;
+import me.hao0.antares.server.event.job.JobFailedEvent;
 import me.hao0.antares.server.event.job.JobFinishedEvent;
 import me.hao0.antares.server.event.job.JobTimeoutEvent;
 import me.hao0.antares.server.exception.JobInstanceCreateException;
 import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.support.JobSupport;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -93,7 +94,7 @@ public class DefaultJobExecutor implements JobExecutor {
                 eventDispatcher.publish(new JobFinishedEvent(instance.getJobId(), instance.getId()));
             } else if (finishResp.isTimeout()){
                 // job instance is timeout
-                eventDispatcher.publish(new JobTimeoutEvent(instance.getJobId(), instance.getId()));
+                eventDispatcher.publish(new JobTimeoutEvent(instance.getJobId(), instance.getId(), buildJobTimeoutDetail(instance)));
             }
 
             // maybe now the job is paused, stopped, ..., so need to expect the job state
@@ -108,14 +109,19 @@ public class DefaultJobExecutor implements JobExecutor {
             String cause = Throwables.getStackTraceAsString(e);
             Logs.error("failed to create job instance when execute job(jobDetail={}, instance={}), cause: {}",
                     jobDetail, instance, cause);
-            handleJobExecuteFailed(instance, appName, jobClass, cause);
+            handleJobExecuteFailed(jobDetail, instance, appName, jobClass, cause);
         } catch (Exception e){
             // handle other exceptions
             String cause = Throwables.getStackTraceAsString(e);
             Logs.error("failed to execute job(jobDetail={}, instance={}), cause: {}",
                     jobDetail, instance, cause);
-            handleJobExecuteFailed(instance, appName, jobClass, cause);
+            handleJobExecuteFailed(jobDetail, instance, appName, jobClass, cause);
         }
+    }
+
+    private String buildJobTimeoutDetail(JobInstance instance) {
+        return "startTime：" + Dates.format(instance.getStartTime()) + ", " +
+               "elapsedTime：" + Dates.timeIntervalStr(instance.getStartTime(), new Date());
     }
 
     private boolean canRunJobInstance(String appName, String jobClass) {
@@ -134,11 +140,8 @@ public class DefaultJobExecutor implements JobExecutor {
         return Boolean.TRUE;
     }
 
-    private void handleJobExecuteFailed(JobInstance instance, String appName, String jobClass, String cause) {
+    private void handleJobExecuteFailed(JobDetail jobDetail, JobInstance instance, String appName, String jobClass, String cause) {
         try {
-
-            // TODO push an alarm event
-
 
             if (instance == null){
                 return;
@@ -160,6 +163,11 @@ public class DefaultJobExecutor implements JobExecutor {
         } catch (Exception e){
             Logs.error("failed to handle the job(instance={}, appName={}, jobClass={}) execute failed, cause: {}",
                     instance, appName, jobClass, Throwables.getStackTraceAsString(e));
+        } finally {
+
+            // publish job failed event
+            Long instanceId = instance == null ? null : instance.getId();
+            eventDispatcher.publish(new JobFailedEvent(jobDetail.getJob().getId(), instanceId, cause));
         }
     }
 

@@ -21,7 +21,7 @@ import me.hao0.antares.common.util.Crons;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.service.ServerService;
 import me.hao0.antares.store.util.Page;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import me.hao0.antares.tower.support.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;

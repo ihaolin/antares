@@ -13,7 +13,7 @@ import me.hao0.antares.store.dao.AppDao;
 import me.hao0.antares.store.dao.JobServerDao;
 import me.hao0.antares.store.service.ClusterService;
 import me.hao0.antares.store.support.AntaresZkClient;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Collections;

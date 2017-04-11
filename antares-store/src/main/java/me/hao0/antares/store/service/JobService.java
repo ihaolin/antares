@@ -15,7 +15,7 @@ import me.hao0.antares.common.model.JobDependence;
 import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.JobInstanceShard;
 import me.hao0.antares.store.util.Page;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import java.util.List;
 
 /**

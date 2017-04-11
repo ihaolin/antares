@@ -45,7 +45,7 @@ import me.hao0.antares.store.support.JobSupport;
 import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.store.util.Page;
 import me.hao0.antares.store.util.Paging;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Collections;

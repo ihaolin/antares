@@ -4,7 +4,7 @@ import me.hao0.antares.common.model.enums.JobTriggerType;
 import me.hao0.antares.server.cluster.server.ServerHost;
 import me.hao0.antares.server.schedule.JobPool;
 import me.hao0.antares.store.service.JobService;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

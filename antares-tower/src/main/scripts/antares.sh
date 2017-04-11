@@ -21,8 +21,20 @@ JAVA_OPTS="${JAVA_OPTS} -XX:+UseConcMarkSweepGC -XX:+HeapDumpOnOutOfMemoryError 
 # CONFIG_OPTS
 CONFIG_OPTS="--server.address=$BIND_ADDR --server.port=$LISTEN_PORT"
 CONFIG_OPTS="$CONFIG_OPTS --spring.redis.host=$REDIS_HOST --spring.redis.port=$REDIS_PORT"
-CONFIG_OPTS="$CONFIG_OPTS --antares.zkServers=$ZK_SERVERS --antares.zkNamespace=$ZK_NAMESPACE"
+CONFIG_OPTS="$CONFIG_OPTS --antares.zk.servers=$ZK_SERVERS --antares.zk.namespace=$ZK_NAMESPACE"
 CONFIG_OPTS="$CONFIG_OPTS --antares.user=$TOWER_USER --antares.pass=$TOWER_PASS"
+
+# ALARM OPTS
+CONFIG_OPTS="$CONFIG_OPTS --antares.alarm.enable=$ALARM_ENABLE --antares.alarm.notifyType=$ALARM_NOTIFY_TYPE"
+CONFIG_OPTS="$CONFIG_OPTS --antares.alarm.subject=$ALARM_SUBJECT"
+CONFIG_OPTS="$CONFIG_OPTS --antares.alarm.template.jobTimeout=$ALARM_TEMPLATE_JOB_TIMEOUT"
+CONFIG_OPTS="$CONFIG_OPTS --antares.alarm.template.jobFailed=$ALARM_TEMPLATE_JOB_FAILED"
+
+# EMAIL OPTS
+CONFIG_OPTS="$CONFIG_OPTS --antares.mail.host=$MAIL_HOST --antares.mail.fromAddr=$MAIL_FROM_ADDR"
+CONFIG_OPTS="$CONFIG_OPTS --antares.mail.fromUser=$MAIL_FROM_USER --antares.mail.fromPass=$MAIL_FROM_PASS"
+CONFIG_OPTS="$CONFIG_OPTS --antares.mail.to=$MAIL_TO"
+
 
 function start()
 {

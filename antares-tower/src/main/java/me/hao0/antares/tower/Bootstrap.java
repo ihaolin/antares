@@ -11,7 +11,8 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 @ComponentScan(basePackages = {
     "me.hao0.antares.store",
-    "me.hao0.antares.tower"
+    "me.hao0.antares.tower",
+    "me.hao0.antares.alarm"
 })
 public class Bootstrap {
 

@@ -13,7 +13,7 @@ import me.hao0.antares.store.manager.AppManager;
 import me.hao0.antares.store.service.AppService;
 import me.hao0.antares.store.util.Page;
 import me.hao0.antares.store.util.Paging;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

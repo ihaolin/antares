@@ -19,8 +19,8 @@ public class AntaresZkClient implements DisposableBean {
 
     @Autowired
     public AntaresZkClient(
-        @Value("${antares.zkServers:localhost:2181}") String zkServers,
-        @Value("${antares.zkNamespace:ats}") String zkNamespace){
+        @Value("${antares.zk.servers:127.0.0.1:2181}") String zkServers,
+        @Value("${antares.zk.namespace:ats}") String zkNamespace){
         this.zkServers = zkServers;
         this.client = ZkClient.newClient(zkServers, zkNamespace);
     }

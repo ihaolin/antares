@@ -10,7 +10,7 @@ import me.hao0.antares.common.zk.Lock;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.service.ServerService;
 import me.hao0.antares.store.support.AntaresZkClient;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 

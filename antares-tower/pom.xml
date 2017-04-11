@@ -5,7 +5,7 @@
     <parent>
         <artifactId>antares</artifactId>
         <groupId>me.hao0</groupId>
-        <version>1.2.0</version>
+        <version>1.3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,7 +20,13 @@
         <dependency>
             <groupId>me.hao0</groupId>
             <artifactId>antares-store</artifactId>
-            <version>1.2.0</version>
+            <version>1.3.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>me.hao0</groupId>
+            <artifactId>antares-alarm</artifactId>
+            <version>1.3.0</version>
         </dependency>
 
         <dependency>
@@ -38,9 +44,15 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- for spring-webmvc -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
         </dependency>
 
         <dependency>

@@ -21,7 +21,7 @@ JAVA_OPTS="${JAVA_OPTS} -XX:+UseConcMarkSweepGC -XX:+HeapDumpOnOutOfMemoryError 
 # CONFIG_OPTS
 CONFIG_OPTS="--server.address=$BIND_ADDR --server.port=$LISTEN_PORT"
 CONFIG_OPTS="$CONFIG_OPTS --spring.redis.host=$REDIS_HOST --spring.redis.port=$REDIS_PORT"
-CONFIG_OPTS="$CONFIG_OPTS --antares.zkServers=$ZK_SERVERS --antares.zkNamespace=$ZK_NAMESPACE"
+CONFIG_OPTS="$CONFIG_OPTS --antares.zk.servers=$ZK_SERVERS --antares.zk.namespace=$ZK_NAMESPACE"
 CONFIG_OPTS="$CONFIG_OPTS --antares.serverFailoverWaitTime=$SERVER_FAILOVER_WAIT_TIME --antares.scheduleThreadCount=$SCHEDULE_THREAD_COUNT"
 
 function start()

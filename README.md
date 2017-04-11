@@ -30,13 +30,17 @@
 
 + antares通过**ip+进程号**标识客户端应用实例，因此支持**单机多应用实例**部署；
 
-### 管理控制台
-
-+ 用户可通过控制台**antares-tower**对任务进行基本操作，如**触发**，**暂停**，**监控**等；
-
 ### 任务依赖
 
-+ antares支持**树形任务依赖**，当某任务执行完成后，会通知其**后置任务**执行。
++ antares支持**树形任务依赖**，当某任务执行完成后，会通知其**后置任务**执行；
+
+### 任务报警
+
++ antares支持基本的任务**超时报警**，**失败报警**等；
+
+### 管理控制台
+
++ 用户可通过控制台**antares-tower**对任务进行基本操作，如**触发**，**暂停**，**监控**等。
 
 ## 名称术语
 
@@ -132,7 +136,7 @@
 	LOG_PATH=./logs
 	
 	# Zookeeper地址
-	ZK_SERVERS=localhost:2181
+	ZK_SERVERS=127.0.0.1:2181
 	
 	# Zookeeper命名空间
 	ZK_NAMESPACE=ats
@@ -188,8 +192,8 @@
 	# 日志目录，相对或绝对路径
 	LOG_PATH=./logs
 	
-	# Zookeeper地址
-	ZK_SERVERS=localhost:2181
+	# Zookeeper地址127.0.0.1
+	ZK_SERVERS=127.0.0.1:2181
 	
 	# Zookeeper命名空间
 	ZK_NAMESPACE=ats
@@ -202,6 +206,40 @@
 	
 	# JVM堆参数配置
 	JAVA_HEAP_OPTS="-Xms512m -Xmx512m -XX:MaxNewSize=256m"
+	
+	# 是否开启报警
+	ALARM_ENABLE=false
+	
+	## 若ALARM_ENABLE=false，下面的配置可以忽略
+	
+	# 通知类型(暂仅支持邮件)
+	# 1：邮件
+	ALARM_NOTIFY_TYPE=1
+	
+	# 报警标题
+	ALARM_SUBJECT=Antares任务报警
+	
+	# 任务超时报警模版，以下四个变量可用，使用{}开头结尾
+	ALARM_TEMPLATE_JOB_TIMEOUT=应用【{appName}】的任务【{jobClass}】执行超时，调度服务器为【{scheduler}】：{detail}.
+	
+	# 任务失败报警模版，以下四个变量可用，使用{}开头结尾
+	ALARM_TEMPLATE_JOB_FAILED=应用【{appName}】的任务【{jobClass}】执行失败，调度服务器为【{scheduler}】：{detail}.
+	
+	### 邮件配置
+	# 邮箱主机
+	MAIL_HOST=192.168.0.1
+	
+	# 发件人邮箱
+	MAIL_FROM_ADDR=haolin.h0@gmail.com
+	
+	# 发件人用户名
+	MAIL_FROM_USER=haolin.h0
+	
+	# 发件人密码
+	MAIL_FROM_PASS=123456
+	
+	# 收件人列表，逗号隔开
+	MAIL_TO=haolin.h0@gmail.com
 	```
 	
 + 启动/关闭/重启控制台：
@@ -212,7 +250,7 @@
 	./bin/antares.sh restart
 	```
 
-+ 这样便可以进入控制台(如<a>http://localhost:22111</a>)，在控制台事先添加应用及任务：
++ 这样便可以进入控制台(如<a>http://127.0.0.1:22111</a>)，在控制台事先添加应用及任务：
 
 	+ 编辑应用：
 
@@ -298,7 +336,7 @@
 			new SimpleAntaresClient(
 				"dev_app", 			// 应用名称
 				"123456", 			// 应用密钥
-				"localhost:2181",	// zookeeper地址 
+				"127.0.0.1:2181",	// zookeeper地址 
 				"ats"               // zookeeper命名空间
 			);				
 	
@@ -340,7 +378,7 @@
 		<!-- 应用密钥 -->
 		<constructor-arg index="1" value="123456" />
 		<!-- zookeeper地址 -->
-		<constructor-arg index="2" value="localhost:2181" />
+		<constructor-arg index="2" value="127.0.0.1:2181" />
 		<!-- zookeeper命名空间 -->
 		<constructor-arg index="2" value="ats" />
 		<!-- 执行job的线程数 -->

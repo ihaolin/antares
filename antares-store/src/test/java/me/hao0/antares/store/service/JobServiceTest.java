@@ -9,7 +9,7 @@ import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.enums.JobStatus;
 import me.hao0.antares.store.BaseTest;
 import me.hao0.antares.store.util.Page;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.Assert.*;

@@ -41,6 +41,11 @@ public final class RedisKeys {
     public static final String JOB_SERVER_MAPPINGS = format("jobs", "server_maps");
 
     /**
+     * Alarm event queue
+     */
+    public static final String ALARM_EVENT_QUEUE = format("alarm", "eq");
+
+    /**
      * The key of id generator
      * @param objectPrefix the object prefix
      * @return the key of id generator

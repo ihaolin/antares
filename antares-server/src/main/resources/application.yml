@@ -22,10 +22,13 @@ logging:
 antares:
 
   # zk hosts
-  zkServers: localhost:2181
+  zk:
 
-  # zk namespace
-  zkNamespace: ats
+    # zk servers
+    servers: 127.0.0.1:2181
+
+    # zk namespace
+    namespace: ats
 
   # server failover wait time(secs)
   serverFailoverWaitTime: 30

@@ -5,7 +5,7 @@ import me.hao0.antares.common.dto.JsonResponse;
 import me.hao0.antares.common.dto.PullShard;
 import me.hao0.antares.common.dto.ShardFinishDto;
 import me.hao0.antares.store.service.JobService;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.Date;

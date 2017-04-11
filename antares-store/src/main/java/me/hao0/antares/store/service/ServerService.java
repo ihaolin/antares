@@ -1,6 +1,6 @@
 package me.hao0.antares.store.service;
 
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import java.util.List;
 
 /**

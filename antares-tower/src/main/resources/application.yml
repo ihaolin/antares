@@ -21,8 +21,58 @@ logging:
 ########### Antares Configuration Start ###########
 antares:
 
-  zkServers: localhost:2181
+  ### Zookeeper ###
+  zk:
 
-  zkNamespace: ats
+    servers: 127.0.0.1:2181
+
+    namespace: ats
+
+  ### Mail ###
+  mail:
+
+    # mail host, e.g., 192.168.0.1
+    host: ""
+
+    # mail from address, e.g., haolin.h0@gmail.com
+    fromAddr: ""
+
+    # mail from username, e.g., haolin.h0
+    fromUser: ""
+
+    # mail from password, e.g., 123456
+    fromPass: ""
+
+    # to receivers, e.g., abc@xxx.com,xyz@xxx.com
+    to: ""
+
+    # bcc receivers, e.g., abc@xxx.com,xyz@xxx.com
+    bcc: ""
+
+
+  ### Alarm ###
+  alarm:
+
+    # enbale or not
+    enable: true
+
+    ### alarm type ###
+    ###
+    ### 1：email
+    ###
+    notifyType: 1
+
+    ### subject ###
+    subject: "Antares系统报警"
+
+    ### alarm template
+    template:
+
+      ### job timeout ###
+      jobTimeout: "应用【{appName}】的任务【{jobClass}】执行超时，调度服务器为【{scheduler}】：{detail}."
+
+      ### job failed ###
+      jobFailed: "应用【{appName}】的任务【{jobClass}】执行失败，调度服务器为【{scheduler}】：{detail}."
+
 
 ########### Antares Configuration End ###########

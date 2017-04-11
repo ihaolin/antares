@@ -10,13 +10,20 @@ public class JobTimeoutEvent extends JobEvent {
 
     private Long jobInstanceId;
 
-    public JobTimeoutEvent(Long jobId, Long jobInstanceId) {
+    private String detail;
+
+    public JobTimeoutEvent(Long jobId, Long jobInstanceId, String detail) {
         super(jobId);
         this.jobInstanceId = jobInstanceId;
+        this.detail = detail;
     }
 
     public Long getJobInstanceId() {
         return jobInstanceId;
+    }
+
+    public String getDetail() {
+        return detail;
     }
 
     @Override

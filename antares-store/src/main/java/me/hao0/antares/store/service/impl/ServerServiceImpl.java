@@ -26,7 +26,7 @@ import me.hao0.antares.store.service.ClusterService;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.service.ServerService;
 import me.hao0.antares.store.support.JobSupport;
-import me.hao0.antares.store.util.Response;
+import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
