@@ -11,7 +11,7 @@ CONF_FILE=$ANTARES_HOME/conf/antares.conf
 
 JAR_FILE=$LIB_HOME/antares-server.jar
 
-PID_FILE=$ANTARES_HOME/antares-servers.pid
+PID_FILE=$ANTARES_HOME/antares-server.pid
 
 # JAVA_OPTS
 JAVA_OPTS="-server -Duser.dir=$BASEDIR -Dantares.logPath=$LOG_PATH -Dantares.redis.namespace=$REDIS_NAMESPACE"

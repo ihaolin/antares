@@ -42,6 +42,10 @@
 
 + 用户可通过控制台**antares-tower**对任务进行基本操作，如**触发**，**暂停**，**监控**等。
 
+## Demo
+
+[在线Demo](http://antares.hao0.me)(用户名/密码：admin/admin123)。
+
 ## 名称术语
 
 + **应用(App)**
