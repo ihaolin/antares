@@ -398,6 +398,32 @@
 
 + 具体可见[单元测试](antares-client-spring/src/test/java/me/hao0/antares/client/SpringAntaresClientTest.java)。
 
+#### 客户端使用(Spring Boot Starter模式)
+
++ 引入maven包：
+
+	```xml
+	<dependency>
+        <groupId>me.hao0</groupId>
+        <artifactId>antares-client-spring-starter</artifactId>
+        <version>${version}</version><!-- 1.3.0+ -->
+    </dependency>
+	```
+
+
++ 在**application.yml**中引入**antares**相关配置即可：
+
+	```yml
+	antares:
+	  appName: myapp
+	  appSecret: 123456
+	  zkServers: localhost:2181
+	  zkNamespace: ats
+	  executorThreadCount: 32
+	```
+
++ 具体参考可见[antares-demo-spring-starter](antares-demo-spring-starter/)。
+
 #### Job监听
 
 + 对于想做一些任务监听的操作，开发人员可选择实现[JobListener](antares-client/src/main/java/me/hao0/antares/client/job/listener/JobListener.java)或[JobResultListner](antares-client/src/main/java/me/hao0/antares/client/job/listener/JobResultListener.java)，如：

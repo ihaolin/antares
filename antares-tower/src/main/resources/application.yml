@@ -54,7 +54,7 @@ antares:
   alarm:
 
     # enbale or not
-    enable: true
+    enable: false
 
     ### alarm type ###
     ###

@@ -1,0 +1,6 @@
+
+antares:
+  appName: myapp
+  appSecret: 123456
+  zkServers: localhost:2181
+  zkNamespace: ats

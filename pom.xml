@@ -20,6 +20,8 @@
         <module>antares-client-spring</module>
         <module>antares-demo</module>
         <module>antares-alarm</module>
+        <module>antares-client-spring-starter</module>
+        <module>antares-demo-spring-starter</module>
     </modules>
     <packaging>pom</packaging>
 

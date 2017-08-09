@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=me.hao0.antares.client.autoconfigure.AntaresClientAutoConfiguration
