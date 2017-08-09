@@ -384,7 +384,7 @@
 		<!-- zookeeper地址 -->
 		<constructor-arg index="2" value="127.0.0.1:2181" />
 		<!-- zookeeper命名空间 -->
-		<constructor-arg index="2" value="ats" />
+		<constructor-arg index="3" value="ats" />
 		<!-- 执行job的线程数 -->
 		<property name="executorThreadCount" value="32" />
 	</bean>
