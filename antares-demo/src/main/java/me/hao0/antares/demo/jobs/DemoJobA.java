@@ -21,7 +21,7 @@ public class DemoJobA implements DefaultJob {
         System.out.println("DemoJobA start...");
         System.out.println("context: " + context);
 
-        Sleeps.sleep(random.nextInt(5) + 1);
+        Sleeps.sleep(random.nextInt(10) + 1);
 
         System.out.println("DemoJobA end...");
 

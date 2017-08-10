@@ -87,7 +87,7 @@ public class DefaultJobExecutor implements JobExecutor {
             // blocking until all shards to be finished or timeout
             Long timeout = jobDetail.getConfig().getTimeout();
             timeout = timeout == null ? 0L : timeout;
-            JobInstanceWaitResp finishResp = jobSupport.waitingJobInstanceFinish(appName, jobClass, timeout, instance.getId());
+            JobInstanceWaitResp finishResp = jobSupport.waitingJobInstanceFinish(appName, jobClass, instance.getId(), timeout);
             if (finishResp.isSuccess()){
                 // job instance is finished successfully
                 // publish job finish event

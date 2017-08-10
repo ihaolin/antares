@@ -14,10 +14,11 @@
 
 	<!-- Spring Antares Client -->
 	<bean class="me.hao0.antares.client.core.SpringAntaresClient">
-		<constructor-arg index="0" value="demo_app" />
+		<constructor-arg index="0" value="myapp" />
 		<constructor-arg index="1" value="123456" />
-		<constructor-arg index="2" value="${antares.zk}" />
-		<property name="executorThreadCount" value="32" />
+		<constructor-arg index="2" value="localhost:2181" />
+		<constructor-arg index="3" value="ats" />
+		<property name="executorThreadCount" value="8" />
 	</bean>
 
 </beans>
