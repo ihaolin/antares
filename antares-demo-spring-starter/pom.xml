@@ -7,10 +7,10 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>antares-demo-spring-boot-starter</artifactId>
+    <artifactId>antares-demo-spring-starter</artifactId>
     <packaging>jar</packaging>
 
-    <name>antares-demo-spring-boot-starter</name>
+    <name>antares-demo-spring-starter</name>
     <url>http://maven.apache.org</url>
 
     <dependencies>
