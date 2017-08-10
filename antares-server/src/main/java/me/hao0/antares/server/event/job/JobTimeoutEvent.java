@@ -28,7 +28,7 @@ public class JobTimeoutEvent extends JobEvent {
 
     @Override
     public String toString() {
-        return "JobFinishedEvent{" +
+        return "JobTimeoutEvent{" +
                 "jobInstanceId=" + jobInstanceId +
                 "} " + super.toString();
     }
