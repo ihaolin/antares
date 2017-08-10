@@ -3,7 +3,7 @@
     <parent>
         <artifactId>antares</artifactId>
         <groupId>me.hao0</groupId>
-        <version>1.3.1</version>
+        <version>1.3.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>me.hao0</groupId>
             <artifactId>antares-client-spring-starter</artifactId>
-            <version>1.3.1</version>
+            <version>1.3.2</version>
         </dependency>
 
     </dependencies>

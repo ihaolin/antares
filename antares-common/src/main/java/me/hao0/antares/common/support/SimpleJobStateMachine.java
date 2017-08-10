@@ -27,6 +27,7 @@ public class SimpleJobStateMachine {
 
         configure(JobState.PAUSED, JobState.WAITING);
         configure(JobState.RUNNING, JobState.WAITING);
+        configure(JobState.WAITING, JobState.WAITING);
 
         configure(JobState.WAITING, JobState.PAUSED);
         configure(JobState.RUNNING, JobState.PAUSED);

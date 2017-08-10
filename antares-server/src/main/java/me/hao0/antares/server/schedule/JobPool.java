@@ -459,8 +459,15 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
             // delete schedule
             scheduler.deleteJob(jobKey);
 
-            // delete the job from zk
-            jobSupport.removeJob(jobDetail);
+            // delete the job instances's from zk
+            // jobSupport.removeJob(jobDetail);
+
+            // TODO FIX
+            String appName = jobDetail.getApp().getAppName();
+            String jobClass = jobDetail.getJob().getClazz();
+
+            jobSupport.updateJobStateDirectly(appName, jobClass, JobState.STOPPED);
+            jobSupport.deleteJobInstances(appName, jobClass);
 
             return Boolean.TRUE;
 
