@@ -327,7 +327,7 @@
 	<dependency>
         <groupId>me.hao0</groupId>
         <artifactId>antares-client</artifactId>
-        <version>1.3.2</version>
+        <version>1.4.0</version>
     </dependency>
 	```
 
@@ -368,7 +368,7 @@
 	<dependency>
         <groupId>me.hao0</groupId>
         <artifactId>antares-client-spring</artifactId>
-        <version>1.3.2</version>
+        <version>1.4.0</version>
     </dependency>
 	```
 
@@ -406,7 +406,7 @@
 	<dependency>
         <groupId>me.hao0</groupId>
         <artifactId>antares-client-spring-starter</artifactId>
-        <version>1.3.2</version><!-- 1.3.0+ -->
+        <version>1.4.0</version><!-- 1.3.0+ -->
     </dependency>
 	```
 
