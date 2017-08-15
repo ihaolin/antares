@@ -10,9 +10,7 @@ import me.hao0.antares.common.model.JobInstance;
 import me.hao0.antares.common.model.enums.JobInstanceStatus;
 import me.hao0.antares.common.model.enums.JobState;
 import me.hao0.antares.common.model.enums.JobTriggerType;
-import me.hao0.antares.common.util.Constants;
-import me.hao0.antares.common.util.Executors;
-import me.hao0.antares.common.util.Systems;
+import me.hao0.antares.common.util.*;
 import me.hao0.antares.server.cluster.client.ClientCluster;
 import me.hao0.antares.server.cluster.server.ServerHost;
 import me.hao0.antares.server.event.core.EventDispatcher;
@@ -23,11 +21,12 @@ import me.hao0.antares.server.exception.JobInstanceCreateException;
 import me.hao0.antares.store.util.Dates;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.support.JobSupport;
-import me.hao0.antares.common.util.Response;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -71,7 +70,7 @@ public class DefaultJobExecutor implements JobExecutor {
                 asyncExecutor.submit(new RefreshJobFireTimeTask(appName, jobClass, context));
             }
 
-            if (!canRunJobInstance(appName, jobClass)){
+            if (!canRunJobInstance(appName, jobClass, jobDetail.getJob().getId())){
                 return;
             }
 
@@ -124,9 +123,13 @@ public class DefaultJobExecutor implements JobExecutor {
                "elapsedTime：" + Dates.timeIntervalStr(instance.getStartTime(), new Date());
     }
 
-    private boolean canRunJobInstance(String appName, String jobClass) {
+    private boolean canRunJobInstance(String appName, String jobClass, Long jobId) {
 
-        if (!clientCluster.hasAliveClients(appName)){
+        if (!hasAvailableClients(appName, jobId)){
+
+            // remove job instance if exists one
+            jobSupport.deleteJobInstances(appName, jobClass);
+
             // there aren't alive clients
             Logs.warn("Invalid job({}/{}) fired, because there are no available clients.", appName, jobClass);
             return Boolean.FALSE;
@@ -139,6 +142,33 @@ public class DefaultJobExecutor implements JobExecutor {
 
         return Boolean.TRUE;
     }
+
+    private boolean hasAvailableClients(String appName, Long jobId){
+
+        List<String> clients = clientCluster.getAliveClients(appName);
+        if (CollectionUtil.isNullOrEmpty(clients)){
+            return false;
+        }
+
+        // has alive clients, but all aren't assign
+        Response<Set<String>> assignsResp = jobService.listSimpleJobAssigns(jobId);
+        if (!assignsResp.isSuccess()){
+            return true;
+        }
+
+        Set<String> assigns = assignsResp.getData();
+        if (!CollectionUtil.isNullOrEmpty(assigns)){
+            for (String client : clients){
+                if (assigns.contains(client.split(":")[0])){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return true;
+    }
+
 
     private void handleJobExecuteFailed(JobDetail jobDetail, JobInstance instance, String appName, String jobClass, String cause) {
         try {

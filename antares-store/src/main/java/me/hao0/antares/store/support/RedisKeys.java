@@ -175,4 +175,13 @@ public final class RedisKeys {
     public static String keyOfJobNextJobs(Long jobId) {
         return format("jobs", jobId, "next");
     }
+
+    /**
+     * The key of the job's assignments
+     * @param jobId the job id
+     * @return jobs:${jobId}:assigns
+     */
+    public static String keyOfJobAssigns(Long jobId) {
+        return format("jobs", jobId, "assigns");
+    }
 }

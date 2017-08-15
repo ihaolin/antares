@@ -4,16 +4,9 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import me.hao0.antares.common.dto.DependenceJob;
-import me.hao0.antares.common.dto.JobControl;
-import me.hao0.antares.common.dto.JobDetail;
-import me.hao0.antares.common.dto.JobEditDto;
-import me.hao0.antares.common.dto.JobFireTime;
-import me.hao0.antares.common.dto.JobInstanceDetail;
-import me.hao0.antares.common.dto.JobInstanceDto;
-import me.hao0.antares.common.dto.JobInstanceShardDto;
-import me.hao0.antares.common.dto.PullShard;
-import me.hao0.antares.common.dto.ShardFinishDto;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import me.hao0.antares.common.dto.*;
 import me.hao0.antares.common.log.Logs;
 import me.hao0.antares.common.model.*;
 import me.hao0.antares.common.model.enums.JobInstanceShardStatus;
@@ -26,12 +19,7 @@ import me.hao0.antares.common.util.CollectionUtil;
 import me.hao0.antares.common.util.Constants;
 import me.hao0.antares.common.util.Executors;
 import me.hao0.antares.common.util.Systems;
-import me.hao0.antares.store.dao.JobConfigDao;
-import me.hao0.antares.store.dao.JobDao;
-import me.hao0.antares.store.dao.JobDependenceDao;
-import me.hao0.antares.store.dao.JobInstanceDao;
-import me.hao0.antares.store.dao.JobInstanceShardDao;
-import me.hao0.antares.store.dao.JobServerDao;
+import me.hao0.antares.store.dao.*;
 import me.hao0.antares.store.exception.JobInstanceNotExistException;
 import me.hao0.antares.store.exception.JobNotExistException;
 import me.hao0.antares.store.exception.ShardOperateException;
@@ -40,6 +28,7 @@ import me.hao0.antares.store.manager.JobManager;
 import me.hao0.antares.store.manager.JobInstanceManager;
 import me.hao0.antares.store.manager.JobInstanceShardManager;
 import me.hao0.antares.store.service.AppService;
+import me.hao0.antares.store.service.ClusterService;
 import me.hao0.antares.store.service.JobService;
 import me.hao0.antares.store.support.JobSupport;
 import me.hao0.antares.store.util.Dates;
@@ -48,9 +37,7 @@ import me.hao0.antares.store.util.Paging;
 import me.hao0.antares.common.util.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -80,6 +67,9 @@ public class JobServiceImpl implements JobService {
     private JobDependenceDao jobDependenceDao;
 
     @Autowired
+    private JobAssignDao jobAssignDao;
+
+    @Autowired
     private JobManager jobManager;
 
     @Autowired
@@ -92,12 +82,17 @@ public class JobServiceImpl implements JobService {
     private JobInstanceShardManager jobInstanceShardManager;
 
     @Autowired
-    private JobSupport jobSupport;
-
-    @Autowired
     private AppService appService;
 
+    @Autowired
+    private ClusterService clusterService;
+
+    @Autowired
+    private JobSupport jobSupport;
+
     private final ExecutorService executor = Executors.newExecutor(Systems.cpuNum(), 10000, "JOB-SERVER-WORKER-");
+
+    private static final String JOB_ASSIGN_EMPTY_PLACE_HOLDER = "-1";
 
     @Override
     public Response<Long> saveJob(JobEditDto editing) {
@@ -201,6 +196,7 @@ public class JobServiceImpl implements JobService {
                         try {
                             jobConfigManager.deleteByJobId(jobId);
                             jobInstanceManager.deleteByJobId(jobId);
+                            jobServerDao.unbindJob(jobId);
                         } catch (Exception e){
                             Logs.error("failed to delete the job(id={})'s config and instance data.", jobId);
                         }
@@ -692,6 +688,45 @@ public class JobServiceImpl implements JobService {
         }
     }
 
+    private JobInstanceDetail renderJobRunningInstance(Long instanceId) {
+
+        JobInstance instance = jobInstanceDao.findById(instanceId);
+        if (instance == null){
+            throw new JobInstanceNotExistException();
+        }
+
+        JobInstanceDetail runningInstance = new JobInstanceDetail();
+
+        // job instance info
+        runningInstance.setJobId(instance.getJobId());
+        runningInstance.setInstanceId(instanceId);
+        runningInstance.setStatus(instance.getStatus());
+        runningInstance.setStartTime(Dates.format(instance.getStartTime()));
+        if (instance.getEndTime() != null){
+            runningInstance.setEndTime(Dates.format(instance.getEndTime()));
+        }
+
+        // progress info
+        Integer totalShardCount = jobInstanceShardDao.countByInstanceId(instanceId).intValue();
+        runningInstance.setTotalShardCount(totalShardCount);
+
+        Integer waitShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.NEW);
+        runningInstance.setWaitShardCount(waitShardCount);
+
+        Integer runningShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.RUNNING);
+        runningInstance.setRunningShardCount(runningShardCount);
+
+        Integer successShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.SUCCESS);
+        runningInstance.setSuccessShardCount(successShardCount);
+
+        Integer failedShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.FAILED);
+        runningInstance.setFailedShardCount(failedShardCount);
+
+        runningInstance.setFinishPercent((successShardCount + failedShardCount) * 100 / totalShardCount);
+
+        return runningInstance;
+    }
+
     @Override
     public Response<Boolean> terminateJob(Long jobId) {
         try {
@@ -831,45 +866,107 @@ public class JobServiceImpl implements JobService {
         return dependenceJob;
     }
 
-    private JobInstanceDetail renderJobRunningInstance(Long instanceId) {
+    @Override
+    public Response<List<JobAssignDto>> listJobAssigns(Long jobId) {
+        try {
 
-        JobInstance instance = jobInstanceDao.findById(instanceId);
-        if (instance == null){
-            throw new JobInstanceNotExistException();
+            Response<JobDetail> jobDetailResp = findJobDetailById(jobId);
+            if (!jobDetailResp.isSuccess()){
+                return Response.notOk(jobDetailResp.getErr());
+            }
+            JobDetail jobDetail = jobDetailResp.getData();
+
+            // get all alive clients
+            Response<List<ClientInfo>> clientInfosResp = clusterService.listClients(jobDetail.getApp().getId());
+            if (!clientInfosResp.isSuccess()){
+                return Response.notOk(clientInfosResp.getErr());
+            }
+            List<ClientInfo> clientInfos = clientInfosResp.getData();
+            if (CollectionUtil.isNullOrEmpty(clientInfos)){
+                return Response.ok(Collections.<JobAssignDto>emptyList());
+            }
+
+            Set<String> assigns = jobAssignDao.listAssigns(jobId);
+
+            List<JobAssignDto> jobAssignDtos = renderJobAssignDtos(clientInfos, assigns);
+
+            return Response.ok(jobAssignDtos);
+
+        } catch (Exception e){
+            Logs.error("failed to paging the job assigns(jobId={}), cause: {}", jobId, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.assign.find.failed");
         }
-
-        JobInstanceDetail runningInstance = new JobInstanceDetail();
-
-        // job instance info
-        runningInstance.setJobId(instance.getJobId());
-        runningInstance.setInstanceId(instanceId);
-        runningInstance.setStatus(instance.getStatus());
-        runningInstance.setStartTime(Dates.format(instance.getStartTime()));
-        if (instance.getEndTime() != null){
-            runningInstance.setEndTime(Dates.format(instance.getEndTime()));
-        }
-
-        // progress info
-        Integer totalShardCount = jobInstanceShardDao.countByInstanceId(instanceId).intValue();
-        runningInstance.setTotalShardCount(totalShardCount);
-
-        Integer waitShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.NEW);
-        runningInstance.setWaitShardCount(waitShardCount);
-
-        Integer runningShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.RUNNING);
-        runningInstance.setRunningShardCount(runningShardCount);
-
-        Integer successShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.SUCCESS);
-        runningInstance.setSuccessShardCount(successShardCount);
-
-        Integer failedShardCount = jobInstanceShardDao.getJobInstanceStatusShardCount(instanceId, JobInstanceShardStatus.FAILED);
-        runningInstance.setFailedShardCount(failedShardCount);
-
-        runningInstance.setFinishPercent((successShardCount + failedShardCount) * 100 / totalShardCount);
-
-        return runningInstance;
     }
 
+    private List<JobAssignDto> renderJobAssignDtos(List<ClientInfo> clientInfos, Set<String> assigns) {
+
+        // clientIp <--> assign
+        Map<String, JobAssignDto> assignDtos = Maps.newHashMapWithExpectedSize(clientInfos.size());
+
+        JobAssignDto assignDto;
+        String clientIp;
+        boolean assign;
+        for (ClientInfo clientInfo : clientInfos){
+
+            clientIp = clientInfo.getAddr().split(":")[0];
+            assign = CollectionUtil.isNullOrEmpty(assigns) || assigns.contains(clientIp);
+
+            assignDto = assignDtos.get(clientIp);
+            if (assignDto == null){
+                assignDto = renderAssignDto(clientIp, assign, clientInfo.getAddr());
+                assignDtos.put(clientIp, assignDto);
+            } else {
+                assignDto.getProcesses().add(clientInfo.getAddr());
+            }
+        }
+
+        return Lists.newArrayList(assignDtos.values());
+    }
+
+    private JobAssignDto renderAssignDto(String clientIp, Boolean assign, String process) {
+
+        JobAssignDto assignDto = new JobAssignDto();
+
+        assignDto.setIp(clientIp);
+        assignDto.setAssign(assign);
+        assignDto.setProcesses(Sets.newHashSet(process));
+
+        return assignDto;
+    }
+
+    @Override
+    public Response<Boolean> saveJobAssign(Long jobId, String clientIps) {
+
+        try {
+
+            jobAssignDao.cleanAssign(jobId);
+
+            if (!Strings.isNullOrEmpty(clientIps)){
+                if (JOB_ASSIGN_EMPTY_PLACE_HOLDER.equals(clientIps)){
+                    // -1: empty assigned clients
+                    jobAssignDao.addAssign(jobId, JOB_ASSIGN_EMPTY_PLACE_HOLDER);
+                } else {
+                    jobAssignDao.addAssign(jobId, clientIps.split(","));
+                }
+            }
+
+            return Response.ok(true);
+        } catch (Exception e){
+            Logs.error("failed to save the job assigns(jobId={}, clientIps={}), cause: {}",
+                    jobId, clientIps, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.assign.save.failed");
+        }
+    }
+
+    @Override
+    public Response<Set<String>> listSimpleJobAssigns(Long jobId) {
+        try {
+            return Response.ok(jobAssignDao.listAssigns(jobId));
+        } catch (Exception e){
+            Logs.error("failed to list the job simple assigns(jobId={}), cause: {}", jobId, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.assign.find.failed");
+        }
+    }
 
     private Response<Boolean> updateJobStatus(Long jobId, JobStatus status) {
         try {
@@ -965,6 +1062,9 @@ public class JobServiceImpl implements JobService {
             // check job instance status
             JobInstance instance = checkJobInstanceStatus(jobInstanceId);
 
+            // check job assign
+            checkJobAssign(instance.getJobId(), client);
+
             // pull the shard and update the shard
             Integer maxPullShardCount = instance.getMaxShardPullCount();
             JobInstanceShard shard = jobInstanceShardManager.pullShard(jobInstanceId, client, maxPullShardCount);
@@ -979,6 +1079,12 @@ public class JobServiceImpl implements JobService {
             Logs.error("failed to pull job instance shard(instanceId={}), cause: {}",
                     jobInstanceId, Throwables.getStackTraceAsString(e));
             return Response.notOk(Response.BUSINESS_ERR, ShardOperateRespCode.SHARD_PULL_FAILED.value());
+        }
+    }
+
+    private void checkJobAssign(Long jobId, String client) {
+        if (!jobAssignDao.isAssigned(jobId, client.split(":")[0])){
+            throw new ShardOperateException(ShardOperateRespCode.IP_NOT_ASSIGNED);
         }
     }
 

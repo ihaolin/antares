@@ -2,6 +2,7 @@ package me.hao0.antares.store.dao;
 
 import me.hao0.antares.common.model.Model;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Author: haolin
@@ -84,6 +85,21 @@ public interface BaseDao<T extends Model> {
      * @return string list
      */
     List<String> listStr(String listKey, Integer offset, Integer limit);
+
+    /**
+     * ZSet range the strings
+     * @param offset the offset
+     * @param limit the limit
+     * @return string list
+     */
+    Set<String> zSetRange(String zSetKey, Integer offset, Integer limit);
+
+    /**
+     * Count the zset
+     * @param zSetKey the zset key
+     * @return the count of the zset
+     */
+    Long zSetCount(String zSetKey);
 
     /**
      * List the object

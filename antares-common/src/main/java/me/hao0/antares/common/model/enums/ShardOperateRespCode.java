@@ -82,7 +82,12 @@ public enum ShardOperateRespCode {
     /**
      * Return the shard failed
      */
-    SHARD_RETURN_FAILED(13);
+    SHARD_RETURN_FAILED(13),
+
+    /**
+     * The client ip isn't allowed to execute job
+     */
+    IP_NOT_ASSIGNED(14);
 
     private Integer value;
 

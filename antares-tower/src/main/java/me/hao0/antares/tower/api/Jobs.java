@@ -1,14 +1,6 @@
 package me.hao0.antares.tower.api;
 
-import me.hao0.antares.common.dto.DependenceJob;
-import me.hao0.antares.common.dto.JobControl;
-import me.hao0.antares.common.dto.JobDetail;
-import me.hao0.antares.common.dto.JobEditDto;
-import me.hao0.antares.common.dto.JobInstanceDetail;
-import me.hao0.antares.common.dto.JobInstanceDto;
-import me.hao0.antares.common.dto.JobInstanceShardDto;
-import me.hao0.antares.common.dto.JsonResponse;
-import me.hao0.antares.common.dto.SaveNextJob;
+import me.hao0.antares.common.dto.*;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.model.JobConfig;
 import me.hao0.antares.common.model.JobDependence;
@@ -528,4 +520,39 @@ public class Jobs {
 
         return JsonResponse.ok(deleteResp.getData());
     }
+
+    /**
+     * Paging the job's assignments
+     * @param jobId the job id
+     * @return the job's assignments
+     */
+    @RequestMapping(value = "/{jobId}/assigns", method = RequestMethod.GET)
+    public JsonResponse listJobAssigns(@PathVariable("jobId") Long jobId){
+
+        Response<List<JobAssignDto>> listResp = jobService.listJobAssigns(jobId);
+        if (!listResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(listResp.getErr()));
+        }
+
+        return JsonResponse.ok(listResp.getData());
+    }
+
+    /**
+     * Save the job assign
+     * @param saveDto the assigned client ips, e.g., 192.168.100.101,192.168.100.102
+     * @return success or not
+     */
+    @RequestMapping(value = "/{jobId}/assigns", method = RequestMethod.POST)
+    public JsonResponse saveJobAssign(
+            @PathVariable("jobId") Long jobId,
+            @RequestBody JobAssignSaveDto saveDto){
+
+        Response<Boolean> saveResp = jobService.saveJobAssign(jobId, saveDto.getAssignIps());
+        if (!saveResp.isSuccess()){
+            return JsonResponse.notOk(messages.get(saveResp.getErr()));
+        }
+
+        return JsonResponse.ok();
+    }
+
 }

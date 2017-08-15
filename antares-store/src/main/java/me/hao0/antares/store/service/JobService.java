@@ -1,14 +1,6 @@
 package me.hao0.antares.store.service;
 
-import me.hao0.antares.common.dto.DependenceJob;
-import me.hao0.antares.common.dto.JobControl;
-import me.hao0.antares.common.dto.JobDetail;
-import me.hao0.antares.common.dto.JobEditDto;
-import me.hao0.antares.common.dto.JobInstanceDetail;
-import me.hao0.antares.common.dto.JobInstanceDto;
-import me.hao0.antares.common.dto.JobInstanceShardDto;
-import me.hao0.antares.common.dto.PullShard;
-import me.hao0.antares.common.dto.ShardFinishDto;
+import me.hao0.antares.common.dto.*;
 import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.model.JobConfig;
 import me.hao0.antares.common.model.JobDependence;
@@ -17,6 +9,7 @@ import me.hao0.antares.common.model.JobInstanceShard;
 import me.hao0.antares.store.util.Page;
 import me.hao0.antares.common.util.Response;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The job service
@@ -299,4 +292,27 @@ public interface JobService {
      * @return the job's next page job ids
      */
     Response<Page<Long>> pagingNextJobIds(Long jobId, Integer pageNo, Integer pageSize);
+
+    /**
+     * Get the jobs' assignments
+     * @param jobId the job id
+     * @return the jobs's assignments
+     */
+    Response<List<JobAssignDto>> listJobAssigns(Long jobId);
+
+    /**
+     * Save the job's assignment
+     * @param jobId the job id
+     * @param clientIps the client ips
+     * @return return true if save successfully
+     */
+    Response<Boolean> saveJobAssign(Long jobId, String clientIps);
+
+    /**
+     * Get the jobs' simple assignments
+     * @param jobId the job id
+     * @return the set
+     */
+    Response<Set<String>> listSimpleJobAssigns(Long jobId);
+
 }

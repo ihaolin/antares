@@ -16,10 +16,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.ParameterizedType;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Author: haolin
@@ -178,6 +175,16 @@ public class RedisDao<T extends Model> implements BaseDao<T> {
     @Override
     public List<String> listStr(String listKey, Integer offset, Integer limit) {
         return redis.opsForList().range(listKey, offset, offset + limit - 1);
+    }
+
+    @Override
+    public Set<String> zSetRange(String zSetKey, Integer offset, Integer limit) {
+        return redis.opsForZSet().range(zSetKey, offset, offset + limit - 1);
+    }
+
+    @Override
+    public Long zSetCount(String zSetKey) {
+        return redis.opsForZSet().zCard(zSetKey);
     }
 
     @Override
