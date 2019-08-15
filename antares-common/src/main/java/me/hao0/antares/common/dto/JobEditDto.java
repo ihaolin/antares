@@ -1,5 +1,7 @@
 package me.hao0.antares.common.dto;
 
+import me.hao0.antares.common.model.enums.RecordType;
+
 import java.io.Serializable;
 
 /**
@@ -34,6 +36,8 @@ public class JobEditDto implements Serializable {
     private Boolean misfire;
 
     private Long timeout;
+
+    private RecordType recordType;
 
     public Long getAppId() {
         return appId;
@@ -131,6 +135,14 @@ public class JobEditDto implements Serializable {
         this.timeout = timeout;
     }
 
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
+    public void setRecordType(RecordType recordType) {
+        this.recordType = recordType;
+    }
+
     @Override
     public String toString() {
         return "JobEditDto{" +
@@ -146,6 +158,7 @@ public class JobEditDto implements Serializable {
                 ", shardParams='" + shardParams + '\'' +
                 ", misfire=" + misfire +
                 ", timeout=" + timeout +
+                ", recordType=" + recordType +
                 '}';
     }
 }

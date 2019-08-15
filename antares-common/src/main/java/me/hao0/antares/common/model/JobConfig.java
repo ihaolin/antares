@@ -1,6 +1,8 @@
 package me.hao0.antares.common.model;
 
 import me.hao0.antares.common.anno.RedisModel;
+import me.hao0.antares.common.model.enums.RecordType;
+
 import java.util.Date;
 
 /**
@@ -52,6 +54,11 @@ public class JobConfig implements Model<Long> {
      * The job timeout seconds to be closed
      */
     private Long timeout;
+
+    /**
+     * When should a job's instance should be record.
+     */
+    private RecordType recordType;
 
     /**
      * The created time
@@ -127,6 +134,14 @@ public class JobConfig implements Model<Long> {
         this.timeout = timeout;
     }
 
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
+    public void setRecordType(RecordType recordType) {
+        this.recordType = recordType;
+    }
+
     public Date getCtime() {
         return ctime;
     }
@@ -154,6 +169,7 @@ public class JobConfig implements Model<Long> {
                 ", shardParams='" + shardParams + '\'' +
                 ", maxShardPullCount=" + maxShardPullCount +
                 ", timeout=" + timeout +
+                ", recordType=" + recordType +
                 ", ctime=" + ctime +
                 ", utime=" + utime +
                 '}';

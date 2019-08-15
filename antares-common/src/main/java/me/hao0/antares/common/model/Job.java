@@ -61,6 +61,7 @@ public class Job implements Model<Long> {
      */
     private Date utime;
 
+
     public Long getId() {
         return id;
     }
