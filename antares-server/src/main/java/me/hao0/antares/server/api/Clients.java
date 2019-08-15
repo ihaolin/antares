@@ -8,9 +8,12 @@ import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.util.Response;
 import me.hao0.antares.store.service.AppService;
 import me.hao0.antares.store.service.JobService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 import static me.hao0.antares.common.util.ClientUris.*;
@@ -24,6 +27,8 @@ import static me.hao0.antares.common.util.ClientUris.*;
 @RequestMapping(value = CLIENTS)
 public class Clients {
 
+    private Logger log = LoggerFactory.getLogger(Clients.class);
+
     private AppService appService;
     private JobService jobService;
 
@@ -32,9 +37,12 @@ public class Clients {
      */
     @PostMapping(REGISTER)
     public void register(
+            HttpServletRequest request,
             @RequestParam("appName") String appName,
             @RequestParam("appKey") String appKey,
             @RequestParam(value = "jobs[]", required = false) String[] jobs) {
+
+        log.info("Client [{}] register app [{}] and it's jobs {}", request.getRemoteAddr(), appName, jobs);
 
         App app = appService.findByName(appName).getData();
         if (app == null) {
