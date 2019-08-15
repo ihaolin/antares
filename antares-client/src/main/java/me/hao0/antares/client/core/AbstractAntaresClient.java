@@ -1,17 +1,23 @@
 package me.hao0.antares.client.core;
 
 import com.google.common.base.Strings;
-import me.hao0.antares.client.job.*;
+import me.hao0.antares.client.job.Job;
+import me.hao0.antares.client.job.JobManager;
 import me.hao0.antares.client.job.execute.JobExecutor;
 import me.hao0.antares.client.job.execute.SimpleJobExecutor;
 import me.hao0.antares.common.support.Component;
-import me.hao0.antares.common.util.Systems;
 import me.hao0.antares.common.util.ZkPaths;
 import me.hao0.antares.common.zk.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static me.hao0.antares.common.util.ClientUris.REGISTER;
 
 /**
  * Author: haolin
@@ -32,9 +38,9 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
     private final String appName;
 
     /**
-     * The app secret
+     * The app key
      */
-    private final String appSecret;
+    private final String appKey;
 
     /**
      * The zk servers
@@ -80,13 +86,13 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
         this(appName, null, zkServers);
     }
 
-    public AbstractAntaresClient(String appName, String appSecret, String zkServers) {
-        this(appName, appSecret, zkServers, null);
+    public AbstractAntaresClient(String appName, String appKey, String zkServers) {
+        this(appName, appKey, zkServers, null);
     }
 
-    public AbstractAntaresClient(String appName, String appSecret, String zkServers, String zkNamespace) {
+    public AbstractAntaresClient(String appName, String appKey, String zkServers, String zkNamespace) {
         this.appName = appName;
-        this.appSecret = appSecret;
+        this.appKey = appKey;
         this.zkServers = zkServers;
         this.zkNamespace = Strings.isNullOrEmpty(zkNamespace) ? ZkPaths.DEFAULT_NS : zkNamespace;
         zk = new AntaresZkAgent(this, zkServers, this.zkNamespace);
@@ -106,8 +112,8 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
         return appName;
     }
 
-    public String getAppSecret() {
-        return appSecret;
+    public String getAppKey() {
+        return appKey;
     }
 
     public String getZkNamespace() {
@@ -147,17 +153,17 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
     }
 
     public void addHttpServer(String httpServer) {
-        if (!this.httpServers.contains(httpServer)){
+        if (!this.httpServers.contains(httpServer)) {
             this.httpServers.add(httpServer);
         }
     }
 
-    public void removeHttpServer(String httpServer){
+    public void removeHttpServer(String httpServer) {
         this.httpServers.remove(httpServer);
     }
 
     @Override
-    public void doStart(){
+    public void doStart() {
 
         zk.start();
 
@@ -169,7 +175,7 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
 
         afterStart();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(){
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 shutdown();
@@ -183,7 +189,7 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
      * Shutdown the client
      */
     @Override
-    public void doShutdown(){
+    public void doShutdown() {
 
         zk.shutdown();
 
@@ -199,8 +205,18 @@ abstract class AbstractAntaresClient extends Component implements AntaresClient 
     }
 
     @Override
-    public void registerJob(Job job){
+    public void registerJob(Job job) {
         jobManager.registerJob(job);
+    }
+
+    @Override
+    public void registerApp() {
+        Map<String, Object> params = new HashMap<>();
+        Set<String> jobs = jobManager.getJobs().keySet();
+        params.put("appName", appName);
+        params.put("appKey", appKey);
+        params.put("jobs", jobs);
+        http.doPost(REGISTER, null, params, 0, Map.class);
     }
 
     /**

@@ -4,6 +4,7 @@ import me.hao0.antares.common.model.Job;
 import me.hao0.antares.store.dao.JobDao;
 import me.hao0.antares.store.support.RedisKeys;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 /**
@@ -17,14 +18,15 @@ public class JobDaoImpl extends RedisDao<Job> implements JobDao {
     @Override
     public Boolean bindApp(Long appId, Long jobId) {
         String appJobsKey = RedisKeys.keyOfAppJobs(appId);
-        return redis.opsForList()
-                .leftPush(appJobsKey, jobId.toString()) > 0L;
+        Long res = redis.opsForList().leftPush(appJobsKey, jobId.toString());
+        return res != null && res > 0L;
     }
 
     @Override
     public Boolean unbindApp(Long appId, Long jobId) {
         String appJobsKey = RedisKeys.keyOfAppJobs(appId);
-        return redis.opsForList().remove(appJobsKey, 1, jobId.toString()) > 0L;
+        Long res = redis.opsForList().remove(appJobsKey, 1, jobId.toString());
+        return res != null && res > 0L;
     }
 
     @Override

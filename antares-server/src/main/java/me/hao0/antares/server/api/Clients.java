@@ -1,14 +1,19 @@
 package me.hao0.antares.server.api;
 
-import static me.hao0.antares.common.util.ClientUris.*;
 import me.hao0.antares.common.dto.JsonResponse;
 import me.hao0.antares.common.dto.PullShard;
 import me.hao0.antares.common.dto.ShardFinishDto;
-import me.hao0.antares.store.service.JobService;
+import me.hao0.antares.common.model.App;
+import me.hao0.antares.common.model.Job;
 import me.hao0.antares.common.util.Response;
+import me.hao0.antares.store.service.AppService;
+import me.hao0.antares.store.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Date;
+
+import static me.hao0.antares.common.util.ClientUris.*;
 
 /**
  * The client api
@@ -19,8 +24,36 @@ import java.util.Date;
 @RequestMapping(value = CLIENTS)
 public class Clients {
 
-    @Autowired
+    private AppService appService;
     private JobService jobService;
+
+    /**
+     * Register app and it's jobs
+     */
+    @PostMapping(REGISTER)
+    public void register(
+            @RequestParam("appName") String appName,
+            @RequestParam("appKey") String appKey,
+            @RequestParam(value = "jobs[]", required = false) String[] jobs) {
+
+        App app = appService.findByName(appName).getData();
+        if (app == null) {
+            app = new App();
+            app.setAppName(appName);
+            app.setAppKey(appKey);
+            Response<Long> save = appService.save(app);
+            app.setId(save.getData());
+        }
+
+        if (jobs != null) {
+            for (String jobClass : jobs) {
+                Job job = new Job();
+                job.setAppId(app.getId());
+                job.setClazz(jobClass);
+                jobService.registerJob(job);
+            }
+        }
+    }
 
     /**
      * Pull one shard
@@ -28,10 +61,10 @@ public class Clients {
     @RequestMapping(value = SHARD_PULL, method = RequestMethod.POST)
     public JsonResponse pullShard(
             @RequestParam("instanceId") Long instanceId,
-            @RequestParam("client") String client){
+            @RequestParam("client") String client) {
 
         Response<PullShard> pullResp = jobService.pullJobInstanceShard(instanceId, client);
-        if (!pullResp.isOk()){
+        if (!pullResp.isOk()) {
             return JsonResponse.notOk(pullResp.getStatus(), pullResp.getErr());
         }
 
@@ -45,10 +78,10 @@ public class Clients {
     public JsonResponse returnShard(
             @RequestParam("instanceId") Long instanceId,
             @RequestParam("shardId") Long shardId,
-            @RequestParam("client") String client){
+            @RequestParam("client") String client) {
 
         Response<Boolean> returnResp = jobService.returnJobInstanceShard(instanceId, shardId, client);
-        if (!returnResp.isOk()){
+        if (!returnResp.isOk()) {
             return JsonResponse.notOk(returnResp.getStatus(), returnResp.getErr());
         }
 
@@ -66,12 +99,12 @@ public class Clients {
             @RequestParam("startTime") Long startTime,
             @RequestParam("endTime") Long endTime,
             @RequestParam(value = "success", defaultValue = "true") Boolean success,
-            @RequestParam(value = "cause", defaultValue = "") String cause){
+            @RequestParam(value = "cause", defaultValue = "") String cause) {
 
         ShardFinishDto shardFinishDto = buildShardFinishDto(client, shardId, instanceId, startTime, endTime, success, cause);
 
         Response<Boolean> pullResp = jobService.finishJobInstanceShard(shardFinishDto);
-        if (!pullResp.isOk()){
+        if (!pullResp.isOk()) {
             return JsonResponse.notOk(pullResp.getStatus(), pullResp.getErr());
         }
 
@@ -89,10 +122,20 @@ public class Clients {
         shardFinishDto.setStartTime(new Date(startTime));
         shardFinishDto.setEndTime(new Date(endTime));
         shardFinishDto.setSuccess(success);
-        if (!success){
+        if (!success) {
             shardFinishDto.setCause(cause);
         }
 
         return shardFinishDto;
+    }
+
+    @Autowired
+    public void setAppService(AppService appService) {
+        this.appService = appService;
+    }
+
+    @Autowired
+    public void setJobService(JobService jobService) {
+        this.jobService = jobService;
     }
 }

@@ -84,7 +84,7 @@ public class RedisDao<T extends Model> implements BaseDao<T> {
     public T findById(Long id) {
         String objKey = objectKey(id);
         Map objectMap = redis.opsForHash().entries(objKey);
-        if (objectMap == null || objectMap.isEmpty()){
+        if (objectMap.isEmpty()){
             return null;
         }
         return (T)Maps.fromMap(objectMap, genericClazz);

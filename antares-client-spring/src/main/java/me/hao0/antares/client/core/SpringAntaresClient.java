@@ -36,13 +36,16 @@ public class SpringAntaresClient implements InitializingBean, DisposableBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
 
         // start the client
         client.start();
 
         // register the jobs
         registerJobs();
+
+        // register client app
+        client.registerApp();
     }
 
     private void registerJobs() {
@@ -65,7 +68,7 @@ public class SpringAntaresClient implements InitializingBean, DisposableBean {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         client.shutdown();
     }
 }

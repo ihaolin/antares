@@ -3,6 +3,7 @@ package me.hao0.antares.client.core;
 import me.hao0.antares.client.job.Job;
 import me.hao0.antares.client.job.execute.JobExecutor;
 import me.hao0.antares.client.job.JobManager;
+import me.hao0.antares.common.model.App;
 import me.hao0.antares.common.support.Lifecycle;
 import me.hao0.antares.common.zk.ZkClient;
 import java.util.List;
@@ -26,10 +27,10 @@ public interface AntaresClient extends Lifecycle {
     String getAppName();
 
     /**
-     * Get the app secret
-     * @return the app secret
+     * Get the app key
+     * @return the app key
      */
-    String getAppSecret();
+    String getAppKey();
 
     /**
      * Get the zk namespace
@@ -98,4 +99,9 @@ public interface AntaresClient extends Lifecycle {
      * @param job the job
      */
     void registerJob(Job job);
+
+    /**
+     * Register client app
+     */
+    void registerApp();
 }

@@ -65,7 +65,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
 
     private void initHttpHeaders() {
         headers.put(APP_NAME_HEADER, client.getAppName());
-        headers.put(APP_KEY_HEADER, client.getAppSecret());
+        headers.put(APP_KEY_HEADER, client.getAppKey());
         headers.put(CLIENT_LANG_HEADER, Langs.JAVA.ordinal() + "");
         headers.put(CLIENT_VERSION_HEADER, client.getClientVersion());
     }
@@ -173,9 +173,9 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
 
         Http http;
         if (method == HttpMethod.GET){
-            http = Http.get(reqUri);
+            http = Http.get(reqUri).params(params);
         } else {
-            http = Http.post(reqUri);
+            http = Http.post(reqUri).body(Http.mapToQueryString(params));
         }
 
         if (readTimeout > 0){
@@ -186,7 +186,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
             http.headers(headers);
         }
 
-        String resp = http.params(params).request();
+        String resp = http.request();
         if (Strings.isNullOrEmpty(resp)){
             return null;
         }

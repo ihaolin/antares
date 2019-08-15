@@ -8,6 +8,8 @@ public interface ClientUris {
 
     String CLIENTS = "/clients";
 
+    String REGISTER = "/register";
+
     String SHARD_PULL = "/shard_pull";
 
     String SHARD_RETURN = "/shard_return";

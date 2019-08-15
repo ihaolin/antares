@@ -61,4 +61,8 @@ public class JobManager extends Component implements Lifecycle {
 
         jobs.put(jobClass, zkJob);
     }
+
+    public Map<String, ZkJob> getJobs() {
+        return jobs;
+    }
 }
