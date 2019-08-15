@@ -105,6 +105,17 @@ public interface JobService {
      */
     Response<Page<JobInstanceDto>> pagingJobInstance(Long appId, String jobClass, Integer pageNo, Integer pageSize);
 
+
+    /**
+     * Paging the job instance
+     *
+     * @param jobId    the job id
+     * @param pageNo   the page no
+     * @param pageSize the page size
+     * @return job instance page data
+     */
+    Response<Page<JobInstanceDto>> pagingJobInstance(Long jobId, Integer pageNo, Integer pageSize);
+
     /**
      * Paging the job instance progress
      * @param jobinstanceId the job instance id
@@ -315,4 +326,17 @@ public interface JobService {
      */
     Response<Set<String>> listSimpleJobAssigns(Long jobId);
 
+    /**
+     * Delete a job's instance
+     * @param insId instance id
+     * @return the result
+     */
+    Response<Boolean> deleteInstance(Long insId);
+
+    /**
+     * Delete all of the job's instances
+     * @param jobId the job id
+     * @return return, true if success, otherwise false
+     */
+    Response<Boolean> deleteJobInstances(Long jobId);
 }

@@ -78,7 +78,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>me.hao0.antares.tower.Bootstrap</mainClass>
+                    <mainClass>me.hao0.antares.tower.AntaresTower</mainClass>
                     <fork>true</fork>
                     <executable>true</executable>
                 </configuration>

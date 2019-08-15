@@ -1,13 +1,11 @@
 package me.hao0.antares.client.core;
 
-import com.alibaba.fastjson.JSON;
 import com.github.kevinsawicki.http.HttpRequest;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import me.hao0.antares.client.exception.AuthFailException;
 import me.hao0.antares.client.exception.Server503Exception;
-import me.hao0.antares.client.util.MapUtil;
 import me.hao0.antares.common.balance.LoadBalance;
 import me.hao0.antares.common.balance.RandomLoadBalance;
 import me.hao0.antares.common.dto.*;
@@ -16,11 +14,10 @@ import me.hao0.antares.common.http.HttpMethod;
 import me.hao0.antares.common.model.enums.ShardOperateRespCode;
 import me.hao0.antares.common.support.Lifecycle;
 import me.hao0.antares.common.support.Component;
-import me.hao0.antares.common.util.ClientUris;
+import me.hao0.antares.common.util.*;
+
 import static me.hao0.antares.common.util.Constants.*;
-import me.hao0.antares.common.util.Langs;
-import me.hao0.antares.common.util.Sleeps;
-import me.hao0.antares.common.util.Systems;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -117,7 +114,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
         if (respMap == null || respMap.isEmpty()){
             return null;
         }
-        return MapUtil.fromMap(respMap, targetType);
+        return Jacksons.fromMap(respMap, targetType);
     }
 
     <T> T doPost(String uri, Map<String, String> headers, Map<String, Object> params, int readTimeout, Class<T> targetType){
@@ -140,7 +137,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
         if (respMap == null || respMap.isEmpty()){
             return null;
         }
-        return MapUtil.fromMap(respMap, targetType);
+        return Jacksons.fromMap(respMap, targetType);
     }
 
     private Map<String, Object> doPostAsMap(String uri, Map<String, String> headers, Map<String, Object> params, int readTimeout){
@@ -169,8 +166,6 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
         }
     }
 
-
-    @SuppressWarnings("unchecked")
     private Map<String, Object> doRequest(String server, String uri, HttpMethod method,
                             Map<String, String> headers, Map<String, Object> params, int readTimeout){
 
@@ -199,9 +194,8 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
         return checkRespErr(resp);
     }
 
-    @SuppressWarnings("unchecked")
     private Map<String, Object> checkRespErr(String respJson) {
-        Map<String, Object> resp = JSON.parseObject(respJson, Map.class);
+        Map<String, Object> resp = Jacksons.toMap(respJson);
         Integer status = getRespStatus(resp);
         if (Objects.equal(JsonResponse.SERVER_ERR.getStatus(), status)){
             throw new Server503Exception();
@@ -230,7 +224,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
         Integer status = getRespStatus(respMap);
         if (Objects.equal(JsonResponse.OK, status)){
             // ok
-            PullShard shard = MapUtil.fromMap((Map<?, ?>)respMap.get("data"), PullShard.class);
+            PullShard shard = Jacksons.fromMap((Map<?, ?>)respMap.get("data"), PullShard.class);
             return new ShardPullResp(null, shard);
         }
 
@@ -276,7 +270,7 @@ public class AntaresHttpAgent extends Component implements Lifecycle {
      */
     public ShardOperateResp finishJobInstanceShard(ShardFinishDto shardFinishDto) {
 
-        Map<String, Object> params = MapUtil.toMap(shardFinishDto);
+        Map<String, Object> params = Jacksons.toMap(shardFinishDto);
 
         Map<String, Object> respMap = doPostAsMap(ClientUris.SHARD_FINISH, headers, params,  0);
         if (respMap == null){

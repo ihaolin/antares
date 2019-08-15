@@ -10,11 +10,11 @@ import org.springframework.context.annotation.ImportResource;
  */
 @SpringBootApplication
 @ImportResource(locations = {"classpath:antares-context.xml"})
-public class Bootstrap {
+public class Demo {
 
     public static void main(String[] args) {
 
-        SpringApplication.run(Bootstrap.class, args);
+        SpringApplication.run(Demo.class, args);
 
     }
 }

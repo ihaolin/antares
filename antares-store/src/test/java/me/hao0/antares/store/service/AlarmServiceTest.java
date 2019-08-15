@@ -31,7 +31,7 @@ public class AlarmServiceTest extends BaseTest {
             event.setType(AlarmEventType.JOB_TIMEOUT.value());
 
             Response<Boolean> pushResp = alarmService.push(event);
-            assertTrue(pushResp.isSuccess());
+            assertTrue(pushResp.isOk());
             assertTrue(pushResp.getData());
         }
 
@@ -43,7 +43,7 @@ public class AlarmServiceTest extends BaseTest {
         int pullSize = 10;
 
         Response<List<AlarmEvent>> pullResp = alarmService.pull(pullSize);
-        assertTrue(pullResp.isSuccess());
+        assertTrue(pullResp.isOk());
         assertNotNull(pullResp.getData());
         assertEquals(0, pullResp.getData().size());
     }

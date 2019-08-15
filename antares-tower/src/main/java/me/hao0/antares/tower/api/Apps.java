@@ -44,7 +44,7 @@ public class Apps {
             @RequestParam(value = "appName", defaultValue = "") String appName){
 
         Response<Page<App>> pagingResp = appService.pagingApp(appName, pageNo, pageSize);
-        if (!pagingResp.isSuccess()){
+        if (!pagingResp.isOk()){
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
@@ -63,7 +63,7 @@ public class Apps {
         app.setAppDesc(appSaveDto.getAppDesc());
 
         Response<Long> saveResp = appService.save(app);
-        if (!saveResp.isSuccess()){
+        if (!saveResp.isOk()){
             Logs.error("failed to save app({}), cause: {}", app, saveResp.getErr());
             return JsonResponse.notOk(saveResp.getErr());
         }
@@ -80,7 +80,7 @@ public class Apps {
     public JsonResponse delApp(@RequestBody AppDeleteDto appDeleteDto){
 
         Response<Boolean> delResp = appService.delete(appDeleteDto.getAppName());
-        if (!delResp.isSuccess()){
+        if (!delResp.isOk()){
             Logs.error("failed to delete app({}), cause: {}", appDeleteDto.getAppName(), delResp.getErr());
         }
 

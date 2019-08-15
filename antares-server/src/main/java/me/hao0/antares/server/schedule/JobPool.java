@@ -134,7 +134,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
 
         // load my jobs
         Response<List<JobDetail>> jobDetailsResp = jobService.findValidJobsByServer(serverHost.get());
-        if (!jobDetailsResp.isSuccess()){
+        if (!jobDetailsResp.isOk()){
             Logs.error("failed to load server({})'s jobs, cause: {}", serverHost.get(), jobDetailsResp.getErr());
         }
 
@@ -279,7 +279,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     public Boolean scheduleJob(Long jobId) {
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail when schedule job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }
@@ -297,7 +297,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     public Boolean triggerJob(Long jobId, JobTriggerType triggerType){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail when trigger job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }
@@ -332,7 +332,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     public Boolean pauseJob(Long jobId){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail when pause job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }
@@ -374,7 +374,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     public Boolean resumeJob(Long jobId){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail when resume job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }
@@ -423,7 +423,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
     public Boolean removeJob(Long jobId){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find the job detail when remove job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }
@@ -432,7 +432,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
 
             // unbind the job from the server
             Response<Boolean> unbindResp = jobService.unbindJobServer(serverHost.get(), jobId);
-            if (!unbindResp.isSuccess() || !unbindResp.getData()){
+            if (!unbindResp.isOk() || !unbindResp.getData()){
                 return Boolean.FALSE;
             }
 
@@ -482,7 +482,7 @@ public class JobPool extends Component implements Lifecycle, InitializingBean, D
      */
     public Boolean reloadJob(Long jobId) {
         Response<JobDetail> findResp = jobService.findJobDetailById(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail when remove job(id={}), cause: {}", jobId, findResp.getErr());
             return Boolean.TRUE;
         }

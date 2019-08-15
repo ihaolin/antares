@@ -49,7 +49,7 @@ public class DefaultAlarmer extends AbstractAlarmer implements Alarmer, Initiali
             @Override
             public void run() {
                 Response<List<AlarmEvent>> pullResp = alarmService.pull(PULL_BATCH_SIZE);
-                if (pullResp.isSuccess()){
+                if (pullResp.isOk()){
                     if (!pullResp.getData().isEmpty()){
                         for (AlarmEvent event : pullResp.getData()){
                             alarm(event);

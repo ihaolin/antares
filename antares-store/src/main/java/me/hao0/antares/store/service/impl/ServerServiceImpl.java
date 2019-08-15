@@ -86,7 +86,7 @@ public class ServerServiceImpl implements ServerService {
 
             // get current server list
             Response<List<String>> listResp = clusterService.listSimpleServers();
-            if (!listResp.isSuccess()){
+            if (!listResp.isOk()){
                 return Response.notOk(listResp.getErr());
             }
 
@@ -119,7 +119,7 @@ public class ServerServiceImpl implements ServerService {
 
             // get current server list
             Response<List<String>> listResp = clusterService.listSimpleServers();
-            if (!listResp.isSuccess()){
+            if (!listResp.isOk()){
                 Logs.error("failed to list servers when schedule job(id={}) possible, cause: {}, but ignore",
                         jobId, listResp.getErr());
                 return Response.ok(true);
@@ -305,7 +305,7 @@ public class ServerServiceImpl implements ServerService {
     private String getScheduleServer(Long jobId){
 
         Response<String> serverResp = jobService.findServerOfJob(jobId);
-        if (!serverResp.isSuccess()){
+        if (!serverResp.isOk()){
             throw new JobServerException(serverResp.getErr().toString());
         }
 
@@ -320,7 +320,7 @@ public class ServerServiceImpl implements ServerService {
     private void checkJobState(Long jobId, JobState expectState, JobState targetState) {
 
         Response<JobDetail> jobResp = jobService.findJobDetailById(jobId);
-        if(!jobResp.isSuccess()){
+        if(!jobResp.isOk()){
             throw new JobFindException();
         }
 

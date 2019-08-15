@@ -37,7 +37,7 @@ public class Clusters {
     public JsonResponse servers(){
 
         Response<List<ServerInfo>> serversResp = clusterService.listServers();
-        if (!serversResp.isSuccess()){
+        if (!serversResp.isOk()){
             Logs.error("failed to list servers, cause: {}", serversResp.getErr());
             return JsonResponse.notOk(messages.get("servers.list.failed"));
         }
@@ -49,7 +49,7 @@ public class Clusters {
     public JsonResponse listJobsByServer(@RequestParam("server") String server){
 
         Response<List<Job>> findResp = jobService.findJobsByServer(server);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -60,7 +60,7 @@ public class Clusters {
     public JsonResponse clients(@RequestParam("appId") Long appId){
 
         Response<List<ClientInfo>> clientsResp = clusterService.listClients(appId);
-        if (!clientsResp.isSuccess()){
+        if (!clientsResp.isOk()){
             Logs.error("failed to list clients of app(id={}), cause: {}", appId, clientsResp.getErr());
             return JsonResponse.notOk(messages.get("clients.list.failed"));
         }

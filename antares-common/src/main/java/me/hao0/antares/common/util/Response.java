@@ -39,33 +39,32 @@ public final class Response<T> implements Serializable {
     private T data;
 
     public static <T> Response<T> ok(){
-        Response r = new Response();
+        Response<T> r = new Response<>();
         r.status = OK;
         return r;
     }
 
     public static <T> Response<T> ok(T data){
-        Response r = new Response();
-        r.status = OK;
+        Response<T> r = ok();
         r.data = data;
         return r;
     }
 
     public static <T> Response<T> notOk(Object err){
-        Response r = new Response();
+        Response<T> r = new Response<>();
         r.status = ERR;
         r.err = err;
         return r;
     }
 
     public static <T> Response<T> notOk(Integer status, Object err){
-        Response r = new Response();
+        Response<T> r = new Response<>();
         r.status = status;
         r.err = err;
         return r;
     }
 
-    public Boolean isSuccess(){
+    public Boolean isOk(){
         return Objects.equal(status, OK);
     }
 

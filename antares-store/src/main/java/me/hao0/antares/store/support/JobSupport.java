@@ -1,6 +1,5 @@
 package me.hao0.antares.store.support;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
@@ -197,7 +196,7 @@ public class JobSupport implements DisposableBean {
     public Boolean updateJobFireTime(String appName, String jobClass, JobFireTime jobFireTime) {
         String jobFireTimeNode = ZkPaths.pathOfJobFireTime(appName, jobClass);
         zk.client().mkdirs(jobFireTimeNode);
-        return zk.client().update(jobFireTimeNode, JSON.toJSONString(jobFireTime));
+        return zk.client().update(jobFireTimeNode, Jacksons.toJson(jobFireTime));
     }
 
     /**

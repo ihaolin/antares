@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.0.RELEASE</version>
+        <version>2.1.6.RELEASE</version>
     </parent>
 
     <groupId>me.hao0</groupId>
@@ -33,7 +33,6 @@
         <quartz.version>2.2.1</quartz.version>
         <slf4j.version>1.7.21</slf4j.version>
         <curator.version>2.8.0</curator.version>
-        <fastjson.version>1.2.22</fastjson.version>
         <mysql-java.version>6.0.5</mysql-java.version>
         <joda.version>2.9.6</joda.version>
         <guava.version>19.0</guava.version>
@@ -74,13 +73,6 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-recipes</artifactId>
                 <version>${curator.version}</version>
-            </dependency>
-
-            <!-- json -->
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>fastjson</artifactId>
-                <version>${fastjson.version}</version>
             </dependency>
 
             <!-- mysql -->

@@ -31,7 +31,7 @@ public class Clients {
             @RequestParam("client") String client){
 
         Response<PullShard> pullResp = jobService.pullJobInstanceShard(instanceId, client);
-        if (!pullResp.isSuccess()){
+        if (!pullResp.isOk()){
             return JsonResponse.notOk(pullResp.getStatus(), pullResp.getErr());
         }
 
@@ -48,7 +48,7 @@ public class Clients {
             @RequestParam("client") String client){
 
         Response<Boolean> returnResp = jobService.returnJobInstanceShard(instanceId, shardId, client);
-        if (!returnResp.isSuccess()){
+        if (!returnResp.isOk()){
             return JsonResponse.notOk(returnResp.getStatus(), returnResp.getErr());
         }
 
@@ -71,7 +71,7 @@ public class Clients {
         ShardFinishDto shardFinishDto = buildShardFinishDto(client, shardId, instanceId, startTime, endTime, success, cause);
 
         Response<Boolean> pullResp = jobService.finishJobInstanceShard(shardFinishDto);
-        if (!pullResp.isSuccess()){
+        if (!pullResp.isOk()){
             return JsonResponse.notOk(pullResp.getStatus(), pullResp.getErr());
         }
 

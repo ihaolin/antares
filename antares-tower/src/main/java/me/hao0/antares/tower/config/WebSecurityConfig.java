@@ -14,9 +14,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring()
-            .antMatchers("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.html");
+    public void configure(WebSecurity web) {
+        //web.ignoring()
+                // .antMatchers("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.html")
+                // .antMatchers("/resources/**");
     }
 
     @Override
@@ -27,18 +28,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         // uri match
         http.authorizeRequests()
-            //.antMatchers("**/*.css", "**/*.js", "**/*.html").permitAll()
-            //.antMatchers(ClientUris.CLIENT_API + "/**/*", ServerUris.SERVERS + "/**/*").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .httpBasic();
+                //.antMatchers("**/*.css", "**/*.js", "**/*.html").permitAll()
+                //.antMatchers(ClientUris.CLIENT_API + "/**/*", ServerUris.SERVERS + "/**/*").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
     }
 
     @Autowired
     public void configureGlobal(
             AuthenticationManagerBuilder auth,
             @Value("${antares.user:admin}") String user,
-            @Value("${antares.pass:admin}") String pass) throws Exception {
+            @Value("${antares.pass:{noop}admin}") String pass) throws Exception {
         auth.inMemoryAuthentication()
                 .withUser(user).password(pass).roles("ADMIN");
     }

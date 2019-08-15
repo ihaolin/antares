@@ -34,7 +34,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>me.hao0.antares.demo.Bootstrap</mainClass>
+                    <mainClass>me.hao0.antares.demo.Demo</mainClass>
                     <fork>true</fork>
                     <executable>true</executable>
                 </configuration>

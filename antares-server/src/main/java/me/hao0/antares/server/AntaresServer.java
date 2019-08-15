@@ -16,11 +16,11 @@ import org.springframework.context.annotation.ComponentScan;
     "me.hao0.antares.store",
     "me.hao0.antares.server"
 })
-public class Bootstrap {
+public class AntaresServer {
 
     public static void main(String[] args) {
 
-        ConfigurableApplicationContext context = SpringApplication.run(Bootstrap.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(AntaresServer.class, args);
 
         // start the server register
         ServerRegister serverRegister = context.getBean(ServerRegister.class);

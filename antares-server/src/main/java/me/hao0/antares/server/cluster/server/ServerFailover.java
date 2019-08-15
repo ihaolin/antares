@@ -72,7 +72,7 @@ public class ServerFailover extends Component implements Lifecycle{
 
             // load the server's jobs
             Response<List<Long>> jobIdsResp = jobService.findJobIdsByServer(server);
-            if (!jobIdsResp.isSuccess()){
+            if (!jobIdsResp.isOk()){
                 Logs.warn("failed to find the server({})'s job ids, cause: {}", server, jobIdsResp.getErr());
                 return;
             }

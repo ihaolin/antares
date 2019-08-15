@@ -1,15 +1,11 @@
-package me.hao0.antares.client;
+package me.hao0.antares.common;
 
-import me.hao0.antares.client.util.MapUtil;
 import me.hao0.antares.common.dto.ShardFinishDto;
+import me.hao0.antares.common.util.Jacksons;
 import org.junit.Test;
 import java.util.Date;
 
-/**
- * Author: haolin
- * Email:  haolin.h0@gmail.com
- */
-public class MapUtilTest {
+public class JacksonsTest {
 
     @Test
     public void testObj2Map(){
@@ -19,8 +15,8 @@ public class MapUtilTest {
         shardFinishDto.setShardId(2L);
         shardFinishDto.setSuccess(Boolean.TRUE);
         shardFinishDto.setStartTime(new Date());
-        shardFinishDto.setEndTime(new Date());
+        shardFinishDto.setEndTime(null);
 
-        System.out.println(MapUtil.toMap(shardFinishDto));
+        System.out.println(Jacksons.toMap(shardFinishDto));
     }
 }

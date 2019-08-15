@@ -5,7 +5,7 @@ import me.hao0.antares.common.model.enums.JobInstanceStatus;
 import me.hao0.antares.common.model.enums.JobStatus;
 import me.hao0.antares.common.model.enums.JobType;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Date;
@@ -15,7 +15,7 @@ import java.util.Date;
  * Email:  haolin.h0@gmail.com
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Bootstrap.class)
+@SpringBootTest(classes = Bootstrap.class)
 public class BaseTest {
 
     protected Job mockJob() {

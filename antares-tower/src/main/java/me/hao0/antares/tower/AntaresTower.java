@@ -14,9 +14,9 @@ import org.springframework.context.annotation.ComponentScan;
     "me.hao0.antares.tower",
     "me.hao0.antares.alarm"
 })
-public class Bootstrap {
+public class AntaresTower {
 
     public static void main(String[] args) {
-        SpringApplication.run(Bootstrap.class, args);
+        SpringApplication.run(AntaresTower.class, args);
     }
 }

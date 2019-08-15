@@ -57,7 +57,7 @@ public abstract class AbstractAlarmer implements Alarmer {
         AlarmContext context = new AlarmContext();
 
         Response<JobDetail> findResp = jobService.findJobDetailById(e.getJobId());
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             Logs.error("failed to find job detail(event={}), cause: {}", e, findResp.getErr());
             return null;
         }
@@ -71,7 +71,7 @@ public abstract class AbstractAlarmer implements Alarmer {
         context.setJobName(jobDetail.getJob().getClazz());
 
         Response<String> schedulerResp = jobService.findServerOfJob(e.getJobId());
-        if (!schedulerResp.isSuccess()){
+        if (!schedulerResp.isOk()){
             Logs.error("failed to find the job(event={})'s scheduler, cause: {}", e, schedulerResp.getErr());
         }
         context.setScheduler(schedulerResp.getData());

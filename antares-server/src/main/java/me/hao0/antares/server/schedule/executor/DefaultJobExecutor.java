@@ -152,7 +152,7 @@ public class DefaultJobExecutor implements JobExecutor {
 
         // has alive clients, but all aren't assign
         Response<Set<String>> assignsResp = jobService.listSimpleJobAssigns(jobId);
-        if (!assignsResp.isSuccess()){
+        if (!assignsResp.isOk()){
             return true;
         }
 
@@ -216,7 +216,7 @@ public class DefaultJobExecutor implements JobExecutor {
         instance.setStartTime(new Date());
 
         Response<Boolean> saveResp = jobService.createJobInstanceAndShards(instance, detail.getConfig());
-        if (!saveResp.isSuccess() || !saveResp.getData()){
+        if (!saveResp.isOk() || !saveResp.getData()){
             throw new JobInstanceCreateException(saveResp.getErr().toString());
         }
 

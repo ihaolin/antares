@@ -48,7 +48,7 @@ public class JobEventListener implements EventListener {
         for (;;){
 
             nextJobIdsResp = jobService.pagingNextJobIds(jobId, pageNo, pageSize);
-            if (!nextJobIdsResp.isSuccess()){
+            if (!nextJobIdsResp.isOk()){
                 Logs.error("failed to paging next job ids(jobId={}, pageNo={}, pageSize={}) when notify all next jobs, cause: {}",
                         jobId, pageNo, pageSize, nextJobIdsResp.getErr());
                 break;
@@ -77,7 +77,7 @@ public class JobEventListener implements EventListener {
         timeoutEvent.setDetail(e.getDetail());
 
         Response<Boolean> pushResp = alarmService.push(timeoutEvent);
-        if (!pushResp.isSuccess()){
+        if (!pushResp.isOk()){
             Logs.warn("failed to push job timeout event({}), cause: {}", timeoutEvent, pushResp.getErr());
         }
     }
@@ -91,7 +91,7 @@ public class JobEventListener implements EventListener {
         failedEvent.setDetail(e.getCause());
 
         Response<Boolean> pushResp = alarmService.push(failedEvent);
-        if (!pushResp.isSuccess()){
+        if (!pushResp.isOk()){
             Logs.warn("failed to push job failed event({}), cause: {}", failedEvent, pushResp.getErr());
         }
     }

@@ -99,7 +99,7 @@ public class JobServiceImpl implements JobService {
         try {
             JobDetail jobDetail = buildJobDetail(editing);
             Response<Long> saveResp = saveJobDetail(jobDetail);
-            if (!saveResp.isSuccess()){
+            if (!saveResp.isOk()){
                 return Response.notOk(saveResp.getErr());
             }
             return Response.ok(saveResp.getData());
@@ -295,7 +295,7 @@ public class JobServiceImpl implements JobService {
         try {
 
             Response<Page<Job>> pagingJobResp = pagingJob(appId, jobClass, pageNo, pageSize);
-            if(!pagingJobResp.isSuccess()){
+            if(!pagingJobResp.isOk()){
                 return Response.notOk(pagingJobResp.getErr());
             }
 
@@ -445,6 +445,28 @@ public class JobServiceImpl implements JobService {
         } catch (Exception e){
             Logs.error("failed to paging job instance(appId={}, jobClass={}, pageNo={}, pageSize={}), cause: {}",
                     appId, jobClass, pageNo, pageSize, Throwables.getStackTraceAsString(e));
+            return Response.notOk("job.instance.find.failed");
+        }
+    }
+
+    @Override
+    public Response<Page<JobInstanceDto>> pagingJobInstance(Long jobId, Integer pageNo, Integer pageSize) {
+        try {
+
+            // find paging
+            Long totalCount = jobInstanceDao.countByJobId(jobId);
+            if (totalCount <= 0L) {
+                return Response.ok(Page.<JobInstanceDto>empty());
+            }
+
+            Paging paging = new Paging(pageNo, pageSize);
+            List<JobInstance> instances = jobInstanceDao.listByJobId(jobId, paging.getOffset(), paging.getLimit());
+            List<JobInstanceDto> instanceDtos = renderJobInstanceDtos(instances);
+
+            return Response.ok(new Page<>(totalCount, instanceDtos));
+        } catch (Exception e) {
+            Logs.error("failed to paging job instance(jobId={}, pageNo={}, pageSize={}), cause: {}",
+                    jobId, pageNo, pageSize, Throwables.getStackTraceAsString(e));
             return Response.notOk("job.instance.find.failed");
         }
     }
@@ -871,14 +893,14 @@ public class JobServiceImpl implements JobService {
         try {
 
             Response<JobDetail> jobDetailResp = findJobDetailById(jobId);
-            if (!jobDetailResp.isSuccess()){
+            if (!jobDetailResp.isOk()){
                 return Response.notOk(jobDetailResp.getErr());
             }
             JobDetail jobDetail = jobDetailResp.getData();
 
             // get all alive clients
             Response<List<ClientInfo>> clientInfosResp = clusterService.listClients(jobDetail.getApp().getId());
-            if (!clientInfosResp.isSuccess()){
+            if (!clientInfosResp.isOk()){
                 return Response.notOk(clientInfosResp.getErr());
             }
             List<ClientInfo> clientInfos = clientInfosResp.getData();
@@ -966,6 +988,16 @@ public class JobServiceImpl implements JobService {
             Logs.error("failed to list the job simple assigns(jobId={}), cause: {}", jobId, Throwables.getStackTraceAsString(e));
             return Response.notOk("job.assign.find.failed");
         }
+    }
+
+    @Override
+    public Response<Boolean> deleteInstance(Long insId) {
+        return Response.ok(jobInstanceManager.deleteById(insId));
+    }
+
+    @Override
+    public Response<Boolean> deleteJobInstances(Long jobId) {
+        return Response.ok(jobInstanceManager.deleteByJobId(jobId));
     }
 
     private Response<Boolean> updateJobStatus(Long jobId, JobStatus status) {
@@ -1207,7 +1239,7 @@ public class JobServiceImpl implements JobService {
 
     private App findAppById(Long appId) {
         Response<App> findResp = appService.findById(appId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             throw new RuntimeException("Failed to find app, id = " + appId);
         }
 

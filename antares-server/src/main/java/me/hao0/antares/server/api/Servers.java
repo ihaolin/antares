@@ -34,7 +34,7 @@ public class Servers {
     public Boolean scheduleJob(@PathVariable(value = "jobId") Long jobId){
 
         Response<Boolean> bindResp = jobService.bindJob2Server(jobId, host.get());
-        if (!bindResp.isSuccess()){
+        if (!bindResp.isOk()){
             return Boolean.FALSE;
         }
 

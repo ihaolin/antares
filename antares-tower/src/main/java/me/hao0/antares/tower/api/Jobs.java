@@ -16,12 +16,8 @@ import me.hao0.antares.store.util.Page;
 import me.hao0.antares.common.util.Response;
 import me.hao0.antares.tower.support.Messages;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -57,7 +53,7 @@ public class Jobs {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 
         Response<Page<Job>> pagingResp = jobService.pagingJob(appId, jobClass, pageNo, pageSize);
-        if(!pagingResp.isSuccess()){
+        if(!pagingResp.isOk()){
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
@@ -80,7 +76,7 @@ public class Jobs {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 
         Response<Page<JobControl>> pagingResp = jobService.pagingJobControl(appId, jobClass, pageNo, pageSize);
-        if(!pagingResp.isSuccess()){
+        if(!pagingResp.isOk()){
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
@@ -106,7 +102,7 @@ public class Jobs {
     public JsonResponse findJobDetail(@PathVariable("id") Long id){
 
         Response<JobDetail> findResp = jobService.findJobDetailById(id);
-        if(!findResp.isSuccess()){
+        if(!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -122,7 +118,7 @@ public class Jobs {
     public JsonResponse findJobConfig(@PathVariable("jobId") Long jobId){
 
         Response<JobConfig> findResp = jobService.findJobConfigByJobId(jobId);
-        if(!findResp.isSuccess()){
+        if(!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -142,7 +138,7 @@ public class Jobs {
         }
 
         Response<Long> saveResp = jobService.saveJob(jobEditDto);
-        if(!saveResp.isSuccess()){
+        if(!saveResp.isOk()){
             return JsonResponse.notOk(messages.get(saveResp.getErr()));
         }
 
@@ -155,36 +151,35 @@ public class Jobs {
             opResp = serverService.removeJob(saveResp.getData());
         }
 
-        if (!opResp.isSuccess() || !opResp.getData()){
+        if (!opResp.isOk() || !opResp.getData()){
             return JsonResponse.notOk(messages.get(opResp.getErr()));
         }
 
-        return JsonResponse.ok(opResp.getData());
+        return JsonResponse.ok(true);
     }
 
     /**
      * Paging the job instances
-     * @param appId the app id
-     * @param jobClass the job class
-     * @param pageNo the page number
+     *
+     * @param jobId    the job class
+     * @param pageNo   the page number
      * @param pageSize the page size
      * @return the job instance page data response
      */
-    @RequestMapping(value = "/instances", method = RequestMethod.GET)
-    public JsonResponse pagingJobInstances(
-            @RequestParam("appId") Long appId,
-            @RequestParam("jobClass") String jobClass,
+    @RequestMapping("{jobId}/instances")
+    public Response pagingJobInstances(
+            @PathVariable("jobId") Long jobId,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
-            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
-        Response<Page<JobInstanceDto>> pagingResp = jobService.pagingJobInstance(appId, jobClass, pageNo, pageSize);
-        if (!pagingResp.isSuccess()){
-            return JsonResponse.notOk(messages.get(pagingResp.getErr()));
+        Response<Page<JobInstanceDto>> pagingResp = jobService.pagingJobInstance(jobId, pageNo, pageSize);
+        if (!pagingResp.isOk()) {
+            return Response.notOk(messages.get(pagingResp.getErr()));
         }
 
         formatJobInstances(pagingResp.getData().getData());
 
-        return JsonResponse.ok(pagingResp.getData());
+        return Response.ok(pagingResp.getData());
     }
 
     private void formatJobInstances(List<JobInstanceDto> instances) {
@@ -212,7 +207,7 @@ public class Jobs {
             @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 
         Response<Page<JobInstanceShardDto>> pagingResp = jobService.pagingJobInstanceShards(jobInstanceId, pageNo, pageSize);
-        if (!pagingResp.isSuccess()){
+        if (!pagingResp.isOk()){
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
@@ -244,7 +239,7 @@ public class Jobs {
     public JsonResponse findJobInstanceShard(@PathVariable("id") Long id){
 
         Response<JobInstanceShard> findResp = jobService.findJobInstanceShardById(id);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -259,11 +254,11 @@ public class Jobs {
     @RequestMapping(value = "/{jobId}/trigger", method = RequestMethod.POST)
     public JsonResponse triggerJob(@PathVariable("jobId") Long jobId){
         Response<Boolean> triggerResp = serverService.triggerJob(jobId);
-        if (!triggerResp.isSuccess() || !triggerResp.getData()){
+        if (!triggerResp.isOk() || !triggerResp.getData()){
             return JsonResponse.notOk(messages.get(triggerResp.getErr()));
         }
 
-        return JsonResponse.ok(triggerResp.getData());
+        return JsonResponse.ok(true);
     }
 
     /**
@@ -274,11 +269,11 @@ public class Jobs {
     @RequestMapping(value = "/{jobId}/pause", method = RequestMethod.POST)
     public JsonResponse pauseJob(@PathVariable("jobId") Long jobId){
         Response<Boolean> pauseResp = serverService.pauseJob(jobId);
-        if (!pauseResp.isSuccess() || !pauseResp.getData()){
+        if (!pauseResp.isOk() || !pauseResp.getData()){
             return JsonResponse.notOk(messages.get(pauseResp.getErr()));
         }
 
-        return JsonResponse.ok(pauseResp.getData());
+        return JsonResponse.ok(true);
     }
 
     /**
@@ -289,11 +284,11 @@ public class Jobs {
     @RequestMapping(value = "/{jobId}/resume", method = RequestMethod.POST)
     public JsonResponse resumeJob(@PathVariable("jobId") Long jobId){
         Response<Boolean> resumeResp = serverService.resumeJob(jobId);
-        if (!resumeResp.isSuccess() || !resumeResp.getData()){
+        if (!resumeResp.isOk() || !resumeResp.getData()){
             return JsonResponse.notOk(messages.get(resumeResp.getErr()));
         }
 
-        return JsonResponse.ok(resumeResp.getData());
+        return JsonResponse.ok(true);
     }
 
     /**
@@ -306,13 +301,13 @@ public class Jobs {
 
         // disable the job
         Response<Boolean> disableResp = jobService.disableJob(jobId);
-        if (!disableResp.isSuccess() || !disableResp.getData()){
+        if (!disableResp.isOk() || !disableResp.getData()){
             return JsonResponse.notOk(messages.get(disableResp.getErr()));
         }
 
         // try to remove job schedule
         Response<Boolean> removeResp = serverService.removeJob(jobId);
-        if (!removeResp.isSuccess() || !removeResp.isSuccess()){
+        if (!removeResp.isOk()){
             return JsonResponse.notOk(messages.get(removeResp.getErr()));
         }
 
@@ -329,13 +324,13 @@ public class Jobs {
 
         // enable the job
         Response<Boolean> enableResp = jobService.enableJob(jobId);
-        if (!enableResp.isSuccess()){
+        if (!enableResp.isOk()){
             return JsonResponse.notOk(messages.get(enableResp.getErr()));
         }
 
         // try to scheduling the job
         Response<Boolean> schedulingResp = serverService.scheduleJobIfPossible(jobId);
-        if (!schedulingResp.isSuccess() || !schedulingResp.getData()){
+        if (!schedulingResp.isOk() || !schedulingResp.getData()){
             return JsonResponse.notOk(messages.get(schedulingResp.getErr()));
         }
 
@@ -352,7 +347,7 @@ public class Jobs {
 
         // schedule the job
         Response<Boolean> scheduleResp = serverService.scheduleJob(jobId);
-        if (!scheduleResp.isSuccess() || !scheduleResp.isSuccess()){
+        if (!scheduleResp.isOk()){
             return JsonResponse.notOk(messages.get(scheduleResp.getErr()));
         }
 
@@ -369,7 +364,7 @@ public class Jobs {
 
         // remove job from the scheduler
         Response<Boolean> removeResp = serverService.removeJob(jobId);
-        if (!removeResp.isSuccess() || !removeResp.isSuccess()){
+        if (!removeResp.isOk()){
             return JsonResponse.notOk(messages.get(removeResp.getErr()));
         }
 
@@ -386,13 +381,13 @@ public class Jobs {
 
         // remove the job
         Response<Boolean> removeResp = serverService.removeJob(jobId);
-        if (!removeResp.isSuccess() || !removeResp.getData()){
+        if (!removeResp.isOk() || !removeResp.getData()){
             return JsonResponse.notOk(messages.get(removeResp.getErr()));
         }
 
         // delete the job
         Response<Boolean> deleteResp = jobService.deleteJob(jobId);
-        if (!deleteResp.isSuccess() || !deleteResp.getData()){
+        if (!deleteResp.isOk() || !deleteResp.getData()){
             return JsonResponse.notOk(messages.get(deleteResp.getErr()));
         }
 
@@ -408,7 +403,7 @@ public class Jobs {
     public JsonResponse terminateJob(@PathVariable("jobId") Long jobId){
 
         Response<Boolean> terminateResp = jobService.terminateJob(jobId);
-        if (!terminateResp.isSuccess()){
+        if (!terminateResp.isOk()){
             return JsonResponse.notOk(messages.get(terminateResp.getErr()));
         }
 
@@ -424,7 +419,7 @@ public class Jobs {
     public JsonResponse monitorJob(@PathVariable("jobId") Long jobId){
 
         Response<JobInstanceDetail> findResp = jobService.monitorJobInstanceDetail(jobId);
-        if (!findResp.isSuccess()){
+        if (!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -442,7 +437,7 @@ public class Jobs {
     public JsonResponse findJobInstanceDetail(@PathVariable("id") Long id){
 
         Response<JobInstanceDetail> findResp = jobService.findJobInstanceDetail(id);
-        if(!findResp.isSuccess()){
+        if(!findResp.isOk()){
             return JsonResponse.notOk(messages.get(findResp.getErr()));
         }
 
@@ -456,6 +451,28 @@ public class Jobs {
             JobInstanceStatus status = JobInstanceStatus.from(detail.getStatus());
             detail.setStatusDesc(messages.get(status.code()));
         }
+    }
+
+
+    @DeleteMapping("/instances/{insId}")
+    public Response deleteJobInstance(@PathVariable("insId") Long insId) {
+        Response<Boolean> response = jobService.deleteInstance(insId);
+
+        if (!response.isOk()) {
+            return Response.notOk(messages.get(response.getErr()));
+        }
+        return Response.ok(true);
+    }
+
+    @DeleteMapping("{jobId}/instances")
+    public Response deleteJobInstances(@PathVariable("jobId") Long jobId) {
+
+        Response<Boolean> response = jobService.deleteJobInstances(jobId);
+
+        if (!response.isOk()) {
+            return Response.notOk(messages.get(response.getErr()));
+        }
+        return Response.ok(true);
     }
 
     /**
@@ -474,7 +491,7 @@ public class Jobs {
         dependence.setNextJobId(nextJob.getNextJobId());
 
         Response<Boolean> addResp = jobService.addJobDependence(dependence);
-        if (!addResp.isSuccess()){
+        if (!addResp.isOk()){
             return JsonResponse.notOk(messages.get(addResp.getErr()));
         }
 
@@ -495,7 +512,7 @@ public class Jobs {
         @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 
         Response<Page<DependenceJob>> pagingResp = jobService.pagingNextJobs(jobId, pageNo, pageSize);
-        if (!pagingResp.isSuccess()){
+        if (!pagingResp.isOk()){
             return JsonResponse.notOk(messages.get(pagingResp.getErr()));
         }
 
@@ -514,7 +531,7 @@ public class Jobs {
             @PathVariable("nextJobId") Long nextJobId){
 
         Response<Boolean> deleteResp = jobService.deleteNextJob(jobId, nextJobId);
-        if (!deleteResp.isSuccess()){
+        if (!deleteResp.isOk()){
             return JsonResponse.notOk(messages.get(deleteResp.getErr()));
         }
 
@@ -530,7 +547,7 @@ public class Jobs {
     public JsonResponse listJobAssigns(@PathVariable("jobId") Long jobId){
 
         Response<List<JobAssignDto>> listResp = jobService.listJobAssigns(jobId);
-        if (!listResp.isSuccess()){
+        if (!listResp.isOk()){
             return JsonResponse.notOk(messages.get(listResp.getErr()));
         }
 
@@ -548,7 +565,7 @@ public class Jobs {
             @RequestBody JobAssignSaveDto saveDto){
 
         Response<Boolean> saveResp = jobService.saveJobAssign(jobId, saveDto.getAssignIps());
-        if (!saveResp.isSuccess()){
+        if (!saveResp.isOk()){
             return JsonResponse.notOk(messages.get(saveResp.getErr()));
         }
 
