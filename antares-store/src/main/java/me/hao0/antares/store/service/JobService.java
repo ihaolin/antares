@@ -24,14 +24,6 @@ public interface JobService {
     Response<Long> saveJob(JobEditDto editing);
 
     /**
-     * Client register job
-     *
-     * @param job the job
-     * @return return the job id
-     */
-    Response<Long> registerJob(Job job);
-
-    /**
      * Save the job detail
      *
      * @param jobDetail the job detail

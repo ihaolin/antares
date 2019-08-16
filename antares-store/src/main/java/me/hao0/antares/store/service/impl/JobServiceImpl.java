@@ -105,16 +105,6 @@ public class JobServiceImpl implements JobService {
         }
     }
 
-    @Override
-    public Response<Long> registerJob(Job job) {
-        Job exist = jobDao.findByJobClass(job.getAppId(), job.getClazz());
-        if (exist == null) {
-            jobManager.save(job);
-            return Response.ok(job.getId());
-        }
-        return Response.ok(exist.getId());
-    }
-
     private JobDetail buildJobDetail(JobEditDto editing) {
 
         JobDetail jobDetail = new JobDetail();

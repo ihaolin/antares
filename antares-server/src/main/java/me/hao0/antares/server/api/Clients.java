@@ -1,5 +1,6 @@
 package me.hao0.antares.server.api;
 
+import me.hao0.antares.common.dto.JobEditDto;
 import me.hao0.antares.common.dto.JsonResponse;
 import me.hao0.antares.common.dto.PullShard;
 import me.hao0.antares.common.dto.ShardFinishDto;
@@ -55,10 +56,14 @@ public class Clients {
 
         if (jobs != null) {
             for (String jobClass : jobs) {
-                Job job = new Job();
+                JobEditDto job = new JobEditDto();
                 job.setAppId(app.getId());
+                job.setStatus(false);
                 job.setClazz(jobClass);
-                jobService.registerJob(job);
+                job.setMaxShardPullCount(3);
+                job.setShardCount(1);
+                job.setMisfire(true);
+                jobService.saveJob(job);
             }
         }
     }

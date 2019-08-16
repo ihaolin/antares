@@ -1,5 +1,7 @@
 package me.hao0.antares.common.util;
 
+import com.google.common.base.Strings;
+
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Calendar;
@@ -229,6 +231,9 @@ public final class Crons implements Serializable, Cloneable {
      *         expression
      */
     public static boolean isValidExpression(String cronExpression) {
+        if (Strings.isNullOrEmpty(cronExpression)) {
+            return false;
+        }
         
         try {
             new Crons(cronExpression);
