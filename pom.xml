@@ -30,7 +30,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <quartz.version>2.2.1</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
         <slf4j.version>1.7.21</slf4j.version>
         <curator.version>2.8.0</curator.version>
         <fastjson.version>1.2.22</fastjson.version>
