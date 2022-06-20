@@ -34,7 +34,7 @@
         <slf4j.version>1.7.21</slf4j.version>
         <curator.version>2.8.0</curator.version>
         <fastjson.version>1.2.22</fastjson.version>
-        <mysql-java.version>6.0.5</mysql-java.version>
+        <mysql-java.version>8.0.28</mysql-java.version>
         <joda.version>2.9.6</joda.version>
         <guava.version>19.0</guava.version>
         <http-request.version>6.0</http-request.version>
